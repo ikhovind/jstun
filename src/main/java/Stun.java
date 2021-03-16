@@ -1,10 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.*;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class Stun extends Thread{
     private ServerSocket serverSocket;
@@ -44,6 +42,26 @@ public class Stun extends Thread{
         }
 
         return response.replace(" ", "0");
+    }
+
+    public String formulateMappedAddress(DatagramPacket packet){
+        String res = String.format("%16s", Integer.toBinaryString(0x0001)); // 0x0001 is the attribute type for mapped address
+        res += String.format("%16s", Integer.toBinaryString(0x0008));       // Hard-coded length of an IPv4 address
+        res += String.format("%8s", Integer.toBinaryString(0x0));           // 1 byte used for alignment purposes, these are ignored
+        res += String.format("%8s", Integer.toBinaryString(0x01));          // Hard-coded family. 0x01 for IPv4, 0x02 for IPv6
+        res += String.format("%16s",
+                Integer.toBinaryString(packet.getPort()));
+        byte[] ip = packet.getAddress().getAddress();
+        int con = 0;
+        for (Byte b :
+                ip) {
+            if(con++ > 3){
+                System.out.println("An IP was found to be longer than 4 bytes! It has been cut off.");
+                continue;
+            }
+            res += String.format("%8s", Integer.toBinaryString((b & 0xff)));
+        }
+        return res.replace(" ", "0");
     }
 
     private boolean verifyMessage(byte[] message){
@@ -102,6 +120,7 @@ public class Stun extends Thread{
             }
 
             System.out.println(formulateHeader(true, transactionID));
+            System.out.println("MAPPED ADDRES: " + formulateMappedAddress(packet));
 
             if (received.equals("end")) {
                 running = false;
