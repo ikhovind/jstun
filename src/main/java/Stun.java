@@ -1,3 +1,6 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -5,6 +8,7 @@ import java.net.*;
 import java.nio.ByteBuffer;
 
 public class Stun extends Thread{
+    private static Logger logger = LoggerFactory.getLogger(Stun.class);
     private ServerSocket serverSocket;
     private DatagramSocket clientSocket;
     private PrintWriter out;
@@ -82,6 +86,7 @@ public class Stun extends Thread{
 
 
     public void run() {
+        logger.error("run started etst");
         running = true;
 
         while (running) {
@@ -100,6 +105,7 @@ public class Stun extends Thread{
             String received = new String(packet.getData(), 0, packet.getLength());
 
             System.out.println(packet.getSocketAddress());
+            logger.error("error test");
             System.out.printf("received: ");
             String print = "";
             for (Byte b :
@@ -136,6 +142,7 @@ public class Stun extends Thread{
     }
 
     public static void main(String[] args) throws IOException {
+        logger.error("main log error test");
         Stun server = new Stun();
         server.start();
     }
