@@ -1,7 +1,7 @@
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
         {
-            urls: 'stun:stun1.l.google.com:19302',
+            urls: 'stun:jstun-1615905577996.azurewebsites.net:4445',
         },
     ],
 });
@@ -23,12 +23,14 @@ WebRTCConnection.createOffer().then((localDescription) => {
 
 
 
+
+
 const remoteDescription = {}/* Add a localDescription from client A here */;
 
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
         {
-            urls: 'stun:stun1.l.google.com:19302',
+            urls: 'stun:jstun-1615905577996.azurewebsites.net:4445',
         },
     ],
 });
@@ -53,6 +55,8 @@ WebRTCConnection.setRemoteDescription(remoteDescription);
 WebRTCConnection.createAnswer().then((localDescription) => {
     WebRTCConnection.setLocalDescription(localDescription);
 });
+
+
 
 
 
