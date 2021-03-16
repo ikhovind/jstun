@@ -24,7 +24,7 @@ public class Stun extends Thread{
         socket = new DatagramSocket(4445);
     }
 
-    //TODO is temorarily a string
+    //TODO is temporarily a string
     //TODO message length is size in bytes not including 20-byte stun header
     public String formulateHeader(boolean success, byte[] transactionID){
 
@@ -82,7 +82,11 @@ public class Stun extends Thread{
             String received = new String(packet.getData(), 0, packet.getLength());
 
             System.out.println(packet.getSocketAddress());
-            System.out.println("recieved " + Arrays.toString(packet.getData()));
+            System.out.printf("received: ");
+            for (Byte b :
+                 packet.getData()) {
+                System.out.println(b & 0xff);
+            }
 
             byte[] ans = packet.getData();
 

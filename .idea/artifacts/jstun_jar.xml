@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="jstun:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/jstun_jar</output-path>
+    <root id="archive" name="jstun.jar">
+      <element id="module-output" name="jstun" />
+    </root>
+  </artifact>
+</component>
