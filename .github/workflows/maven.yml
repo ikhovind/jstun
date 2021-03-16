@@ -27,4 +27,4 @@ jobs:
     
     steps:
       - name: run unit test
-        run: mvn -X test
+        run: mvn verify
