@@ -55,8 +55,10 @@ public class Stun extends Thread{
             if(message[i] != magic[i - 32]) return false;
         }
         //check that message class is allowed for particular method
-
-
+        //check that message class is request
+        //is message request
+        if((message[0] & 1) != 0 || (message[1] & 16) != 0) return false;
+        
         return true;
     }
 
