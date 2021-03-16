@@ -61,7 +61,7 @@ public class Stun extends Thread{
                 ip) {
             if(con++ > 3){
                 System.out.println("An IP was found to be longer than 4 bytes! It has been cut off.");
-                continue;
+                return null;
             }
             res += String.format("%8s", Integer.toBinaryString((b & 0xff)));
         }
@@ -101,6 +101,7 @@ public class Stun extends Thread{
         running = true;
 
         while (running) {
+            Boolean stop = false;
             DatagramPacket packet
                     = new DatagramPacket(buf, buf.length);
             try {
@@ -138,16 +139,23 @@ public class Stun extends Thread{
 
             String response = "";
             response += formulateHeader(true, transactionID);
-            response += formulateMappedAddress(packet);
+            if ((formulateMappedAddress(packet) != null)) {
+                response += formulateMappedAddress(packet);
+            } else {
+                stop = true;
+            }
 
             byte[] responseArr = binaryStringToByteArray(response);
 
             packet = new DatagramPacket(responseArr, responseArr.length, address, port);
 
-            try {
-                socket.send(packet);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(!stop){
+                try {
+                    System.out.println("sent packet with address" + packet.getAddress());
+                    socket.send(packet);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         socket.close();
