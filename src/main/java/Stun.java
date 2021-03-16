@@ -89,10 +89,15 @@ public class Stun extends Thread{
             System.out.println(packet.getSocketAddress());
             logger.error("error test");
             System.out.printf("received: ");
+            String print = "";
             for (Byte b :
                  packet.getData()) {
-                System.out.println(b & 0xff);
+                print += b & 0xff;
             }
+            System.out.println(print);
+
+            System.out.println("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
+            System.out.println("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
 
             byte[] ans = packet.getData();
 
