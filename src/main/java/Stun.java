@@ -158,12 +158,14 @@ public class Stun extends Thread{
 
             byte[] responseArr = binaryStringToByteArray(response);
 
-            packet = new DatagramPacket(responseArr, responseArr.length, address, port);
+            DatagramPacket send = new DatagramPacket(responseArr, responseArr.length);
+            send.setAddress(packet.getAddress());
+            send.setPort(packet.getPort());
 
             if(!stop){
                 try {
                     System.out.println("sent packet with address" + packet.getAddress());
-                    socket.send(packet);
+                    socket.send(send);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
