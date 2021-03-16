@@ -10,6 +10,12 @@ on:
     branches: [ main ]
 
 jobs:
+  format:
+    runs-on: self-hosted
+    steps:
+    - name: format code
+      run: astyle --style=java -r '*.java' -n
+    
   build:
 
     runs-on: self-hosted
