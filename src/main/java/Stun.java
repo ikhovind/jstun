@@ -1,9 +1,7 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 
@@ -125,6 +123,19 @@ public class Stun extends Thread{
                 print += b & 0xff;
             }
             System.out.println(print);
+
+            try {
+                FileWriter fw = new FileWriter("out.txt", true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
+                bw.newLine();
+                bw.write("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
+                bw.newLine();
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
 
             System.out.println("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
             System.out.println("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
