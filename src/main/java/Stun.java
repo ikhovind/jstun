@@ -84,6 +84,17 @@ public class Stun extends Thread{
         return true;
     }
 
+    private byte[] binaryStringToByteArray(String str){
+        byte[] bytes = new byte[str.length()/8];
+        int start = 0, end = 8;
+        for(int i = 0; i<bytes.length; i++){
+            bytes[i] = (byte) Integer.parseInt(str.substring(start, end));
+            start += 8;
+            end += 8;
+        }
+
+        return bytes;
+    }
 
     public void run() {
         logger.error("run started etst");
@@ -125,13 +136,14 @@ public class Stun extends Thread{
                 transactionID[i] = ans[62 + i];
             }
 
-            System.out.println(formulateHeader(true, transactionID));
-            System.out.println("MAPPED ADDRES: " + formulateMappedAddress(packet));
+            String response = "";
+            response += formulateHeader(true, transactionID);
+            response += formulateMappedAddress(packet);
 
-            if (received.equals("end")) {
-                running = false;
-                continue;
-            }
+            byte[] responseArr = binaryStringToByteArray(response);
+
+            packet = new DatagramPacket(responseArr, responseArr.length, address, port);
+
             try {
                 socket.send(packet);
             } catch (IOException e) {
