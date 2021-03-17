@@ -185,12 +185,17 @@ public class Stun extends Thread{
             byte[] transactionID = getTransactionID(packet);
 
             String response = "";
+
+            /*
             response += formulateHeader(true, transactionID);
             if ((formulateMappedAddress(packet) != null)) {
                 response += formulateMappedAddress(packet);
             } else {
                 stop = true;
             }
+            */
+
+            response += formulateXORMappedAddress(packet);
 
             System.out.println("Response.length: " + response.length());
             int byteLength = (response.length()/8)-20;
