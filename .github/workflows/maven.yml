@@ -30,6 +30,7 @@ jobs:
       needs: test
       steps:
        - run: |
+          touch ~/.ssh/known_hosts
           echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           touch ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
