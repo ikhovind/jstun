@@ -186,8 +186,9 @@ public class Stun extends Thread{
 
             String response = "";
 
-            /*
             response += formulateHeader(true, transactionID);
+            
+            /*
             if ((formulateMappedAddress(packet) != null)) {
                 response += formulateMappedAddress(packet);
             } else {
