@@ -109,7 +109,7 @@ public class Stun extends Thread{
             }
         }
 
-        return res;
+        return res.replace(" ", "0");
     }
 
     private boolean verifyMessage(byte[] message){
