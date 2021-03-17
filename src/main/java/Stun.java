@@ -70,11 +70,14 @@ public class Stun extends Thread{
 
     public String formulateXORMappedAddress(DatagramPacket packet){
         byte[] ip = packet.getAddress().getAddress();
+        Boolean ipv6 = false;
         int length = 0x0008;
         int family = 0x01;
         if(ip.length==8){
             length = 0x0014;
             family = 0x02;
+            ipv6 = true;
+            System.out.println("IPv6 address found");
         }else if(ip.length>8){
             System.out.println("what in tarnation is this");
             return "ERROR";
@@ -92,9 +95,21 @@ public class Stun extends Thread{
         int binPort = Integer.parseInt(Integer.toBinaryString(packet.getPort()), 2);
         int xport = binPort ^ binCookie;
         res += String.format("%16s",
-                Integer.toBinaryString(xport);
+                Integer.toBinaryString(xport));
+
+        if(ipv6){
 
 
+        }else{
+            int[] cookie = new int[]{0x21, 0x12, 0xA4, 0x42};
+            int i = 0;
+            for (Byte b : ip) {
+                int temp = b ^ cookie[i++];
+                res+=String.format("%8s", Integer.toBinaryString(temp));
+            }
+        }
+
+        return res;
     }
 
     private boolean verifyMessage(byte[] message){
@@ -178,6 +193,7 @@ public class Stun extends Thread{
             } else {
                 stop = true;
             }
+            response += formulateXORMappedAddress(packet);
 
             byte[] responseArr = binaryStringToByteArray(response);
 
@@ -187,7 +203,7 @@ public class Stun extends Thread{
 
             if(!stop){
                 try {
-                    System.out.println("sent packet with address" + packet.getAddress());
+                    System.out.println("sent packet with address: " + send.getSocketAddress() + "\nwith source address: " + packet.getSocketAddress());
                     socket.send(send);
                 } catch (IOException e) {
                     e.printStackTrace();
