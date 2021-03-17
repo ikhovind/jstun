@@ -20,7 +20,7 @@ jobs:
     needs: job1
     steps:
     - run: mvn -B package --file pom.xml
-test:
+	test:
     runs-on: self-hosted
     needs: job1
     steps:
