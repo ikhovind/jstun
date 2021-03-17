@@ -52,19 +52,17 @@ public class Stun extends Thread{
         String res = String.format("%16s", Integer.toBinaryString(0x0001)); // 0x0001 is the attribute type for mapped address
         if(ipv6) res += String.format("%16s", Integer.toBinaryString(0x014));
         else res += String.format("%16s", Integer.toBinaryString(0x0008));       // Hard-coded length of an IPv4 address
-        res += String.format("%8s", 0); //first byte must be all zeroes
+
+        res += String.format("%8s", Integer.toBinaryString(0x0)); //first byte must be all zeroes
         if(ipv6) res += String.format("%8s", Integer.toBinaryString(0x02)); //0x02 is ipv6 family
-        else String.format("%8s", Integer.toBinaryString(0x01)); //0x01 is ipv4 family
+        else res += String.format("%8s", Integer.toBinaryString(0x01)); //0x01 is ipv4 family
 
         res += String.format("%16s", Integer.toBinaryString(packet.getPort())); //16 bit port where message was recieved from
-        int con = 0;
+
         for (Byte b : ip) {
-            if(!ipv6 && con++ > 3){
-                System.out.println("An IPv4 was found to be longer than 4 bytes! It has been cut off.");
-                return null;
-            }
             res += String.format("%8s", Integer.toBinaryString((b & 0xff)));
         }
+        System.out.println("Mapped Address: " + res.replace(" ", "0"));
         return res.replace(" ", "0");
     }
 
@@ -83,7 +81,7 @@ public class Stun extends Thread{
             return "ERROR";
         }
 
-        String res = String.format("%16s", Integer.toBinaryString(0x8020));    // 0x8020 is the attribute type for XOR mapped address
+        String res = String.format("%16s", Integer.toBinaryString(0x0020));    // 0x0020 is the attribute type for XOR mapped address
         res += String.format("%16s", Integer.toBinaryString(length));            // Attribute Length. 0x0008 for IPv4, 0x0014 for IPv6
 
         res += String.format("%8s", Integer.toBinaryString(0x0));             // 1 byte used for alignment purposes, these are ignored
@@ -194,13 +192,19 @@ public class Stun extends Thread{
                 stop = true;
             }
 
-            System.out.println("Response: " + response);
-            byte[] responseArr = binaryStringToByteArray(response);
+            System.out.println("Response.length: " + response.length());
+            int byteLength = (response.length()/8)-20;
+            System.out.println("bytelength: " + byteLength);
+            String binLength =
+                    String.format("%16s", Integer.toBinaryString(byteLength))
+                            .replace(" ", "0");
+            System.out.println("binlength: " + binLength);
 
-            for (Byte b :
-                    responseArr) {
-                System.out.println(b & 0xff);
-            }
+            String newResponse = response.substring(0, 16) + binLength + response.substring(32);
+
+            byte[] responseArr = binaryStringToByteArray(newResponse);
+
+            //for (Byte b :responseArr) {System.out.println(b & 0xff);}
 
             DatagramPacket send = new DatagramPacket(responseArr, responseArr.length);
             send.setAddress(packet.getAddress());
