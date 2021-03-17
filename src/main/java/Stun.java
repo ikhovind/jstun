@@ -51,6 +51,7 @@ public class Stun extends Thread{
         String res = String.format("%8s", 0); //first byte must be all zeroes
         if(ipv6) res += String.format("%8s", 0x02); //0x02 is ipv6 family
         else String.format("%8s", 0x01); //0x01 is ipv4 family
+
         res += String.format("%16s", Integer.toBinaryString(packet.getPort())); //16 bit port where message was recieved from
         int con = 0;
         for (Byte b : ip) {
@@ -86,10 +87,8 @@ public class Stun extends Thread{
                         .substring(0, 16), 2);
         int binPort = Integer.parseInt(Integer.toBinaryString(packet.getPort()), 2);
         int xport = binPort ^ binCookie;
-
         res += String.format("%16s",
                 Integer.toBinaryString(xport);
-
 
 
     }
@@ -120,6 +119,17 @@ public class Stun extends Thread{
         }
 
         return bytes;
+    }
+
+    private byte[] getTransactionID(DatagramPacket packet){
+        byte[] ans = packet.getData();
+
+        byte[] transactionID = new byte[12];
+
+        for(int i = 0; i < 12; i++){
+            transactionID[i] = ans[8 + i];
+        }
+        return transactionID;
     }
 
     public void run() {
@@ -155,13 +165,7 @@ public class Stun extends Thread{
             System.out.println("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
             System.out.println("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
 
-            byte[] ans = packet.getData();
-
-            byte[] transactionID = new byte[12];
-
-            for(int i = 0; i < 12; i++){
-                transactionID[i] = ans[62 + i];
-            }
+            byte[] transactionID = getTransactionID(packet);
 
             String response = "";
             response += formulateHeader(true, transactionID);
