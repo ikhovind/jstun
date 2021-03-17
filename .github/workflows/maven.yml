@@ -26,7 +26,7 @@ jobs:
       steps:
       - run: mvn verify
   deploy:
-      runs-on: self-hosted
+      runs-on: ubuntu-latest
       needs: test
       steps:
        - run: |
