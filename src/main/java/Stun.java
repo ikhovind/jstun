@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 public class Stun extends Thread{
     private ServerSocket serverSocket;
     private DatagramSocket clientSocket;
-    private PrintWriter out;
     private BufferedReader in;
     private byte header[] = new byte[20];
     private final int errorClass =    0b00000100010000;
@@ -43,19 +42,20 @@ public class Stun extends Thread{
         return response.replace(" ", "0");
     }
 
-    public String formulateMappedAddress(DatagramPacket packet){
-        String res = String.format("%16s", Integer.toBinaryString(0x0001)); // 0x0001 is the attribute type for mapped address
-        res += String.format("%16s", Integer.toBinaryString(0x0008));       // Hard-coded length of an IPv4 address
-        res += String.format("%8s", Integer.toBinaryString(0x0));           // 1 byte used for alignment purposes, these are ignored
-        res += String.format("%8s", Integer.toBinaryString(0x01));          // Hard-coded family. 0x01 for IPv4, 0x02 for IPv6
-        res += String.format("%16s",
-                Integer.toBinaryString(packet.getPort()));
+    public String formulateMappedAddress(DatagramPacket packet) {
+        boolean ipv6 = false;
         byte[] ip = packet.getAddress().getAddress();
+        if(ip.length > 4){
+            ipv6 = true;
+        }
+        String res = String.format("%8s", 0); //first byte must be all zeroes
+        if(ipv6) res += String.format("%8s", 0x02); //0x02 is ipv6 family
+        else String.format("%8s", 0x01); //0x01 is ipv4 family
+        res += String.format("%16s", Integer.toBinaryString(packet.getPort())); //16 bit port where message was recieved from
         int con = 0;
-        for (Byte b :
-                ip) {
-            if(con++ > 3){
-                System.out.println("An IP was found to be longer than 4 bytes! It has been cut off.");
+        for (Byte b : ip) {
+            if(!ipv6 && con++ > 3){
+                System.out.println("An IPv4 was found to be longer than 4 bytes! It has been cut off.");
                 return null;
             }
             res += String.format("%8s", Integer.toBinaryString((b & 0xff)));
@@ -150,17 +150,6 @@ public class Stun extends Thread{
             }
             System.out.println(print);
 
-            try {
-                FileWriter fw = new FileWriter("out.txt", true);
-                BufferedWriter bw = new BufferedWriter(fw);
-                bw.write("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
-                bw.newLine();
-                bw.write("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
-                bw.newLine();
-                bw.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
 
             System.out.println("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
