@@ -96,13 +96,12 @@ public class Stun extends Thread{
                 Integer.toBinaryString(xport));
 
         if(ipv6){
-
-
+            
         }else{
             int[] cookie = new int[]{0x21, 0x12, 0xA4, 0x42};
             int i = 0;
             for (Byte b : ip) {
-                int temp = b ^ cookie[i++];
+                int temp = (b&0xff) ^ cookie[i++];
                 res+=String.format("%8s", Integer.toBinaryString(temp));
             }
         }
@@ -187,7 +186,7 @@ public class Stun extends Thread{
             String response = "";
 
             response += formulateHeader(true, transactionID);
-            
+
             /*
             if ((formulateMappedAddress(packet) != null)) {
                 response += formulateMappedAddress(packet);
@@ -210,7 +209,7 @@ public class Stun extends Thread{
 
             byte[] responseArr = binaryStringToByteArray(newResponse);
 
-            //for (Byte b :responseArr) {System.out.println(b & 0xff);}
+            for (Byte b :responseArr) {System.out.println("Byte: " + (b&0xff) + ", hex: " + Integer.toHexString(b&0xff));}
 
             DatagramPacket send = new DatagramPacket(responseArr, responseArr.length);
             send.setAddress(packet.getAddress());
