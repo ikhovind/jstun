@@ -48,7 +48,11 @@ public class Stun extends Thread{
         if(ip.length > 4){
             ipv6 = true;
         }
-        String res = String.format("%8s", 0); //first byte must be all zeroes
+
+        String res = String.format("%16s", Integer.toBinaryString(0x0001)); // 0x0001 is the attribute type for mapped address
+        if(ipv6) res += String.format("%16s", Integer.toBinaryString(0x014));
+        else res += String.format("%16s", Integer.toBinaryString(0x0008));       // Hard-coded length of an IPv4 address
+        res += String.format("%8s", 0); //first byte must be all zeroes
         if(ipv6) res += String.format("%8s", 0x02); //0x02 is ipv6 family
         else String.format("%8s", 0x01); //0x01 is ipv4 family
         res += String.format("%16s", Integer.toBinaryString(packet.getPort())); //16 bit port where message was recieved from
