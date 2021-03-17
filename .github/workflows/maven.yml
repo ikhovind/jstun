@@ -35,7 +35,7 @@ jobs:
           touch ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          scp src/main/java/Stun.java ec2-user@ec2-18-223-209-84.us-east-2.compute.amazonaws.com:/jstun/src/main/java/Stun.java
+          scp src/main/java/Stun.java ec2-user@ec2-18-223-209-84.us-east-2.compute.amazonaws.com:jstun/src/main/java/Stun.java
       env:
           SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
           SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
