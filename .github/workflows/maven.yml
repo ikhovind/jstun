@@ -17,26 +17,24 @@ jobs:
       run: astyle --style=java -r "*.java" -n
   build:
     runs-on: self-hosted
-    needs: job1
+    needs: format
     steps:
     - run: mvn -B package --file pom.xml
-test:
-    runs-on: self-hosted
-    needs: job1
-    steps:
-    - run: mvn verify
-deploy:
-    runs-on: self-hosted
-    needs: job1
-    steps:
-        run: |
+  test:
+      runs-on: self-hosted
+      needs: build
+      steps:
+      - run: mvn verify
+  deploy:
+      runs-on: self-hosted
+      steps:
+       - run: |
           mkdir ~/.ssh echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           touch ~/.ssh/awsvm
           chmod 600 ~/.ssh/awsvm
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/awsvm
-					scp src/main/java/Stun.java ec2-user@ec2-18-223-209-84.us-east-2.compute.amazonaws.com:/jstun/src/main/java/Stun.java
-
-		env:
-			SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
-			SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
-			SSH_KEY_PATH: ${{ github.workspace }}/../private.key
+          scp src/main/java/Stun.java ec2-user@ec2-18-223-209-84.us-east-2.compute.amazonaws.com:/jstun/src/main/java/Stun.java
+      env:
+          SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+          SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
+          SSH_KEY_PATH: ${{ github.workspace }}/../private.key
