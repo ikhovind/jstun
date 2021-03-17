@@ -1,7 +1,7 @@
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
         {
-            urls: 'stun:jstun-1615905577996.azurewebsites.net:4445',
+            urls: 'stun:18.223.209.84:3478',
         },
     ],
 });
@@ -30,7 +30,7 @@ const remoteDescription = {}/* Add a localDescription from client A here */;
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
         {
-            urls: 'stun:jstun-1615905577996.azurewebsites.net:4445',
+            urls: 'stun:18.223.209.84:3478',
         },
     ],
 });

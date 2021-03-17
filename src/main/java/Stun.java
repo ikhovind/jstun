@@ -18,7 +18,7 @@ public class Stun extends Thread{
     private int magicCookie = 0x2112A442;
 
     public Stun() throws SocketException {
-        socket = new DatagramSocket(8080);
+        socket = new DatagramSocket(3478);
     }
 
     //TODO is temporarily a string
