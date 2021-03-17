@@ -63,6 +63,37 @@ public class Stun extends Thread{
         return res.replace(" ", "0");
     }
 
+    public String formulateXORMappedAddress(DatagramPacket packet){
+        byte[] ip = packet.getAddress().getAddress();
+        int length = 0x0008;
+        int family = 0x01;
+        if(ip.length==8){
+            length = 0x0014;
+            family = 0x02;
+        }else if(ip.length>8){
+            System.out.println("what in tarnation is this");
+            return "ERROR";
+        }
+
+        String res = String.format("%16s", Integer.toBinaryString(0x8020));    // 0x8020 is the attribute type for XOR mapped address
+        res += String.format("%16s", Integer.toBinaryString(length));            // Attribute Length. 0x0008 for IPv4, 0x0014 for IPv6
+
+        res += String.format("%8s", Integer.toBinaryString(0x0));             // 1 byte used for alignment purposes, these are ignored
+        res += String.format("%8s", Integer.toBinaryString(family));            // Attribute Family. 0x01 for IPv4, 0x02 for IPv6
+        int binCookie = Integer.parseInt(
+                String.format("%32s",Integer.toBinaryString(magicCookie))
+                        .replace(" ", "0")
+                        .substring(0, 16), 2);
+        int binPort = Integer.parseInt(Integer.toBinaryString(packet.getPort()), 2);
+        int xport = binPort ^ binCookie;
+
+        res += String.format("%16s",
+                Integer.toBinaryString(xport);
+
+
+
+    }
+
     private boolean verifyMessage(byte[] message){
         byte[] magic = ByteBuffer.allocate(4).putInt(magicCookie).array();
         //first two bits zero
