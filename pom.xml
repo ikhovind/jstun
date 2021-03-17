@@ -45,6 +45,13 @@
       </plugin>
     </plugins> 
   </build>
+  <distributionManagement>
+    <repository>
+      <id>ikhovind--jstun-repo</id>
+      <name>ikhovind--jstun-repo</name>
+      <url>https://ikhovind-804945044940.d.codeartifact.eu-north-1.amazonaws.com/maven/jstun-repo/</url>
+    </repository>
+  </distributionManagement>
   <dependencies>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
