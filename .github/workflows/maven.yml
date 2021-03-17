@@ -8,34 +8,35 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-stages:
-	-build
-	-test
-	-deploy
-	
-install:
-	stage: build
+jobs:
+  format:
     runs-on: self-hosted
+    # Map a step output to a job output
     steps:
-    - name: format code
-      run: astyle --style=java -r '*.java' -n
-  	- name: build 
-      run: mvn -B package --file pom.xml
+    - id: step1
+      run: astyle --style=java -r "*.java" -n
+  build:
+    runs-on: self-hosted
+    needs: job1
+    steps:
+    - run: mvn -B package --file pom.xml
+	test:
+    runs-on: self-hosted
+    needs: job1
+    steps:
+    - run: mvn verify
+	deploy:
+    runs-on: self-hosted
+    needs: job1
+    steps:
+        run: |
+          mkdir ~/.ssh echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          touch ~/.ssh/awsvm
+          chmod 600 ~/.ssh/awsvm
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/awsvm
+					scp src/main/java/Stun.java ec2-user@ec2-18-223-209-84.us-east-2.compute.amazonaws.com:/jstun/src/main/java/Stun.java
 
-test:
-	runs-on: self-hosted
-
-	steps:
-	  - name: run unit test
-		run: mvn verify
-
-deploy:
-  stage: deploy
-  script:
-    - mkdir ~/.ssh
-    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-    - touch ~/.ssh/awsvm
-    - chmod 600 ~/.ssh/awsvm # Required permission by ssh
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/awsvm
-    - scp src/main/java/Stun.java ec2-user@ec2-18-223-209-84.us-east-2.compute.amazonaws.com:/jstun/src/main/java/Stun.java
-      
+		env:
+			SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+			SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
+			SSH_KEY_PATH: ${{ github.workspace }}/../private.key
