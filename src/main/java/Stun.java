@@ -1,5 +1,6 @@
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
 import java.nio.ByteBuffer;
 
@@ -38,7 +39,6 @@ public class Stun extends Thread{
         for(Byte b : transactionID){
             response += String.format("%8s", Integer.toBinaryString(Byte.toUnsignedInt(b)));
         }
-
         return response.replace(" ", "0");
     }
 
@@ -53,8 +53,8 @@ public class Stun extends Thread{
         if(ipv6) res += String.format("%16s", Integer.toBinaryString(0x014));
         else res += String.format("%16s", Integer.toBinaryString(0x0008));       // Hard-coded length of an IPv4 address
         res += String.format("%8s", 0); //first byte must be all zeroes
-        if(ipv6) res += String.format("%8s", 0x02); //0x02 is ipv6 family
-        else String.format("%8s", 0x01); //0x01 is ipv4 family
+        if(ipv6) res += String.format("%8s", Integer.toBinaryString(0x02)); //0x02 is ipv6 family
+        else String.format("%8s", Integer.toBinaryString(0x01)); //0x01 is ipv4 family
 
         res += String.format("%16s", Integer.toBinaryString(packet.getPort())); //16 bit port where message was recieved from
         int con = 0;
@@ -132,7 +132,7 @@ public class Stun extends Thread{
         byte[] bytes = new byte[str.length()/8];
         int start = 0, end = 8;
         for(int i = 0; i<bytes.length; i++){
-            bytes[i] = (byte) Integer.parseInt(str.substring(start, end));
+            bytes[i] = (byte) Integer.parseInt(String.format("%8s", Integer.parseInt(str.substring(start, end))).replace(" ", "0"), 2);
             start += 8;
             end += 8;
         }
@@ -193,9 +193,14 @@ public class Stun extends Thread{
             } else {
                 stop = true;
             }
-            response += formulateXORMappedAddress(packet);
 
+            System.out.println("Response: " + response);
             byte[] responseArr = binaryStringToByteArray(response);
+
+            for (Byte b :
+                    responseArr) {
+                System.out.println(b & 0xff);
+            }
 
             DatagramPacket send = new DatagramPacket(responseArr, responseArr.length);
             send.setAddress(packet.getAddress());
