@@ -33,7 +33,7 @@ public class Stun extends Thread {
 
         System.out.println("check 3 passed");
         //check that message length is sensible - client should only send header
-        if((((message[2] & 0xff << 4)) | message[3] & 0xff) < 20){
+        if(message.length < 20){
             System.out.println("illegally short header");
             throw new BadRequestException("Illegally short header");
         }
