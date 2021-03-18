@@ -105,7 +105,11 @@ public class Stun extends Thread {
                 //Bad Request
                 response.insertErrorCodeAttribute(400, "Bad Request: " + e.getMessage());
                 try {
-                    socket.send(response.getDataGramPacket());
+                    //  Prepares the response as a package to be sent
+                    DatagramPacket send = response.getDataGramPacket();
+                    send.setAddress(packet.getAddress());
+                    send.setPort(packet.getPort());
+                    socket.send(send);
                 }
                 catch (IOException ioException){
                     ioException.printStackTrace();
