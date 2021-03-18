@@ -1,8 +1,11 @@
 
+
 import java.io.*;
 import java.math.BigInteger;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 public class Stun extends Thread {
     private ServerSocket serverSocket;
@@ -13,7 +16,6 @@ public class Stun extends Thread {
     private final int bindingMethod = 0b00000000000001;
     private final int successClass = 0b00000100000000;
     private DatagramSocket socket;
-    private boolean running;
     private byte[] buf = new byte[256];
     private int magicCookie = 0x2112A442;
 
@@ -71,13 +73,14 @@ public class Stun extends Thread {
         Boolean ipv6 = false;
         int length = 0x0008;
         int family = 0x01;
-        if (ip.length == 8) {
+        System.out.println(ip.length + " for ip " + Arrays.toString(ip));
+        if (ip.length == 16) {
             length = 0x0014;
             family = 0x02;
             ipv6 = true;
             System.out.println("IPv6 address found");
-        } else if (ip.length > 8) {
-            System.out.println("what in tarnation is this");
+        } else if (ip.length > 16) {
+            System.out.println("what in tarnation is this: " + Arrays.toString(ip));
             return "ERROR";
         }
 
@@ -95,13 +98,23 @@ public class Stun extends Thread {
         res += String.format("%16s",
                 Integer.toBinaryString(xport));
 
+        int[] xorbytes = new int[]{0x21, 0x12, 0xA4, 0x42, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
         if (ipv6) {
+            int i = 4;
+            for (Byte b : getTransactionID(packet)) {
+                xorbytes[i++] = b;
+            }
 
+            i = 0;
+
+            for (Byte b : ip) {
+                int temp = (b & 0xff) ^ xorbytes[i++];
+                res += String.format("%8s", Integer.toBinaryString(temp));
+            }
         } else {
-            int[] cookie = new int[]{0x21, 0x12, 0xA4, 0x42};
             int i = 0;
             for (Byte b : ip) {
-                int temp = (b & 0xff) ^ cookie[i++];
+                int temp = (b & 0xff) ^ xorbytes[i++];
                 res += String.format("%8s", Integer.toBinaryString(temp));
             }
         }
@@ -149,7 +162,7 @@ public class Stun extends Thread {
     }
 
     public void run() {
-        running = true;
+        boolean running = true;
 
         while (running) {
             Boolean stop = false;
@@ -196,21 +209,23 @@ public class Stun extends Thread {
 
             response += formulateXORMappedAddress(packet);
 
-            System.out.println("Response.length: " + response.length());
+            //System.out.println("Response.length: " + response.length());
             int byteLength = (response.length() / 8) - 20;
             System.out.println("bytelength: " + byteLength);
             String binLength =
                     String.format("%16s", Integer.toBinaryString(byteLength))
                             .replace(" ", "0");
-            System.out.println("binlength: " + binLength);
+            //System.out.println("binlength: " + binLength);
 
             String newResponse = response.substring(0, 16) + binLength + response.substring(32);
 
             byte[] responseArr = binaryStringToByteArray(newResponse);
 
+            /*
             for (Byte b : responseArr) {
                 System.out.println("Byte: " + (b & 0xff) + ", hex: " + Integer.toHexString(b & 0xff));
             }
+            */
 
             DatagramPacket send = new DatagramPacket(responseArr, responseArr.length);
             send.setAddress(packet.getAddress());
