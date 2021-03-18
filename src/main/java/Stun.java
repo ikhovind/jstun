@@ -24,7 +24,6 @@ public class Stun extends Thread {
     }
 
     //TODO is temporarily a string
-    //TODO message length is size in bytes not including 20-byte stun header
     public String formulateHeader(boolean success, byte[] transactionID) {
 
         //legger på 0 helt til lengden er delelig på 16
