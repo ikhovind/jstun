@@ -158,7 +158,7 @@ public class Response {
         byte[] bytes = new byte[str.length() / 8];
         int start = 0, end = 8;
         for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (byte) Integer.parseInt(String.format("%8s", Integer.parseInt(str.substring(start, end))).replace(" ", "0"), 2);
+            bytes[i] = (byte) Integer.parseInt(String.format("%8s", Integer.parseInt(str.substring(start, end).replace(" ", "0"))).replace(" ", "0"), 2);
             start += 8;
             end += 8;
         }
