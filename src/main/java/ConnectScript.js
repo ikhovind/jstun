@@ -1,11 +1,10 @@
 let webRTC;
 
-document.getElementById("generateRemote").addEventListener("click", generateRemote(document.getElementById("stunServer").value));
+document.getElementById("generateRemote").addEventListener("click", generateRemote());
 
-document.getElementById("connectToRemote").addEventListener("click", connectToRemote(document.getElementById("stunServer").value, document.getElementById("remoteDescription").value));
+document.getElementById("connectToRemote").addEventListener("click", connectToRemote(document.getElementById("remoteDescription").value));
 
-function generateRemote(stunServer){
-    console.log(stunServer);
+function generateRemote(){
     webRTC = new RTCPeerConnection({
         iceServers: [
             {
@@ -27,12 +26,12 @@ function generateRemote(stunServer){
     webRTC.createOffer().then((localDescription) => {
         webRTC.setLocalDescription(localDescription);
     });
-    document.getElementById("connectToRemote").removeEventListener("click")
+    document.getElementById("connectToRemote").removeEventListener("click", generateRemote)
     document.getElementById("connectToRemote").addEventListener("click",
         clientAConnect(document.getElementById("remoteDescription").value));
 }
 
-function connectToRemote(ip, rmDescription){
+function connectToRemote(rmDescription){
     const remoteDescription = rmDescription;
 
     const WebRTCConnection = new RTCPeerConnection({
