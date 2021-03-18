@@ -161,11 +161,24 @@ public class Stun extends Thread {
         return transactionID;
     }
 
+    private void debugPacket(DatagramPacket packet) {
+        System.out.println(packet.getSocketAddress());
+        System.out.printf("received: ");
+        String print = "";
+        for (Byte b :
+                packet.getData()) {
+            print += b & 0xff;
+        }
+        System.out.println(print);
+
+        System.out.println("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
+        System.out.println("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
+    }
+
     public void run() {
         boolean running = true;
 
         while (running) {
-            Boolean stop = false;
             DatagramPacket packet
                     = new DatagramPacket(buf, buf.length);
             try {
@@ -174,71 +187,38 @@ public class Stun extends Thread {
                 e.printStackTrace();
             }
 
-            InetAddress address = packet.getAddress();
-            int port = packet.getPort();
-            packet = new DatagramPacket(buf, buf.length, address, port);
-
-            String received = new String(packet.getData(), 0, packet.getLength());
-
-            System.out.println(packet.getSocketAddress());
-            System.out.printf("received: ");
-            String print = "";
-            for (Byte b :
-                    packet.getData()) {
-                print += b & 0xff;
-            }
-            System.out.println(print);
-
-
-            System.out.println("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
-            System.out.println("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
-
+                //  Begins building the response by getting transaction ID from the client,
+                //  and uses when creating the response header
             byte[] transactionID = getTransactionID(packet);
-
             String response = "";
-
             response += formulateHeader(true, transactionID);
 
-            /*
-            if ((formulateMappedAddress(packet) != null)) {
-                response += formulateMappedAddress(packet);
-            } else {
-                stop = true;
-            }
-            */
-
+                //  Adds attributes to the response
             response += formulateXORMappedAddress(packet);
+            response += formulateMappedAddress(packet);
 
-            //System.out.println("Response.length: " + response.length());
+                //  Overwrites the header's placeholder for length.
+                //  NB! THIS SHOULD BE DONE LAST
             int byteLength = (response.length() / 8) - 20;
-            System.out.println("bytelength: " + byteLength);
             String binLength =
                     String.format("%16s", Integer.toBinaryString(byteLength))
                             .replace(" ", "0");
-            //System.out.println("binlength: " + binLength);
 
             String newResponse = response.substring(0, 16) + binLength + response.substring(32);
 
+                //  Prepares the response as a package to be sent
             byte[] responseArr = binaryStringToByteArray(newResponse);
-
-            /*
-            for (Byte b : responseArr) {
-                System.out.println("Byte: " + (b & 0xff) + ", hex: " + Integer.toHexString(b & 0xff));
-            }
-            */
-
             DatagramPacket send = new DatagramPacket(responseArr, responseArr.length);
             send.setAddress(packet.getAddress());
             send.setPort(packet.getPort());
 
-            if (!stop) {
-                try {
-                    System.out.println("sent packet with address: " + send.getSocketAddress() + "\nwith source address: " + packet.getSocketAddress());
-                    socket.send(send);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                System.out.println("sent packet with address: " + send.getSocketAddress() + "\nwith source address: " + packet.getSocketAddress());
+                socket.send(send);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
         }
         socket.close();
     }
