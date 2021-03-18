@@ -1,20 +1,15 @@
 
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 public class Stun extends Thread {
     private ServerSocket serverSocket;
     private DatagramSocket clientSocket;
     private BufferedReader in;
     private byte header[] = new byte[20];
-    private final int errorClass = 0b00000100010000;
-    private final int bindingMethod = 0b00000000000001;
-    private final int successClass = 0b00000100000000;
     private DatagramSocket socket;
     private byte[] buf = new byte[256];
     private int magicCookie = 0x2112A442;
@@ -23,25 +18,6 @@ public class Stun extends Thread {
         socket = new DatagramSocket(3478);
     }
 
-    //TODO is temporarily a string
-    public String formulateHeader(boolean success, byte[] transactionID) {
-
-        //legger på 0 helt til lengden er delelig på 16
-        String response = String.format("%16s", Integer.toBinaryString(
-                (success ? successClass : errorClass) | bindingMethod
-        ));
-
-        //placeholder for message length ?
-        response += String.format("%16s", Integer.toBinaryString(0b0));
-
-        response += String.format("%32s", Integer.toBinaryString(magicCookie));
-
-        //TODO Get transaction ID from client
-        for (Byte b : transactionID) {
-            response += String.format("%8s", Integer.toBinaryString(Byte.toUnsignedInt(b)));
-        }
-        return response.replace(" ", "0");
-    }
 
     public String formulateMappedAddress(DatagramPacket packet) {
         boolean ipv6 = false;
@@ -188,14 +164,16 @@ public class Stun extends Thread {
 
                 //  Begins building the response by getting transaction ID from the client,
                 //  and uses when creating the response header
-            byte[] transactionID = getTransactionID(packet);
-            String response = "";
-            response += formulateHeader(true, transactionID);
-
+            Attribute response = new Attribute(true, packet.getData());
                 //  Adds attributes to the response
-            response += formulateXORMappedAddress(packet);
-            response += formulateMappedAddress(packet);
+            response.insertMappedAddress(packet.getAddress().getAddress(), packet.getPort());
+            try {
+                response.insertXorMappedAdress(packet.getAddress().getAddress(), packet.getData(), packet.getPort());
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
 
+            /*
                 //  Overwrites the header's placeholder for length.
                 //  NB! THIS SHOULD BE DONE LAST
             int byteLength = (response.length() / 8) - 20;
@@ -205,8 +183,10 @@ public class Stun extends Thread {
 
             String newResponse = response.substring(0, 16) + binLength + response.substring(32);
 
+             */
+
                 //  Prepares the response as a package to be sent
-            byte[] responseArr = binaryStringToByteArray(newResponse);
+            byte[] responseArr = binaryStringToByteArray(response.getResponse());
             DatagramPacket send = new DatagramPacket(responseArr, responseArr.length);
             send.setAddress(packet.getAddress());
             send.setPort(packet.getPort());
