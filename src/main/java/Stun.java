@@ -115,7 +115,6 @@ public class Stun extends Thread {
                     ioException.printStackTrace();
                 }
             }
-            throw new IllegalArgumentException("error in packet");
         }
         socket.close();
     }
