@@ -94,8 +94,8 @@ public class Response {
     }
 
     public void insertErrorCodeAttribute(int code, String errorMessage){
-        if(errorMessage.length() > 127){
-            throw new IllegalArgumentException("Given error message exceeds maximum length of 127");
+        if(errorMessage.length() > 127 || errorMessage.getBytes(StandardCharsets.UTF_8).length > 763){
+            throw new IllegalArgumentException("Given error message exceeds maximum length of 127 characters or 763 bytes");
         }
         if(!(code > 299 && code < 700)) throw new IllegalArgumentException("Given code is not an error code");
         //20 bits for alignment purposes
