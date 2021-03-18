@@ -31,9 +31,9 @@ public class Stun extends Thread {
 
         System.out.println("check 3 passed");
         //check that message length is sensible - client should only send header
-        if((message[2] & 0xff + message[3] & 0xff) < 20) return false;
+        if((((message[2] & 0xff << 4)) | message[3] & 0xff) < 20) return false;
         //todo check how long messages clients can send
-        if((message[2] & 0xff + message[3] & 0xff) > 9999) return false;
+        if((((message[2] & 0xff) << 4) | message[3] & 0xff) > 9999) return false;
 
 
         System.out.println("check 4 passed");

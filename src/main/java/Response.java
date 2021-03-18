@@ -1,4 +1,5 @@
 import java.net.DatagramPacket;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Response {
@@ -92,6 +93,23 @@ public class Response {
 
     }
 
+    public void insertErrorCodeAttribute(int code, String errorMessage){
+        if(errorMessage.length() > 127){
+            throw new IllegalArgumentException("Given error message exceeds maximum length of 127");
+        }
+        if(!(code > 299 && code < 700)) throw new IllegalArgumentException("Given code is not an error code");
+        //20 bits for alignment purposes
+        body +=  String.format("%20s", Integer.toBinaryString(0));
+        //The Class represents the hundreds digit of the error code
+        body += String.format("%3s", Integer.toBinaryString(code / 100));
+        //The Number represents the error code modulo 100
+        body += String.format("%3s", Integer.toBinaryString(code % 100));
+
+        for(Byte b : errorMessage.getBytes(StandardCharsets.UTF_8)){
+            body += Integer.toBinaryString(b & 0xff);
+        }
+    }
+
     private static byte[] getTransactionID(byte[] data) {
 
         byte[] transactionID = new byte[12];
@@ -105,12 +123,11 @@ public class Response {
     //TODO probably more efficient to use byte array rather than string
     private void formulateHeader(boolean success, byte[] data) {
 
-        //legger på 0 helt til lengden er delelig på 16
+        //first two bits plus message type is the first 16 bits
         String response = String.format("%16s", Integer.toBinaryString(
                 (success ? successClass : errorClass) | bindingMethod
         ));
 
-        //placeholder for message length ?
         response += String.format("%16s", Integer.toBinaryString(0b0));
 
         response += String.format("%32s", Integer.toBinaryString(magicCookie));
