@@ -47,7 +47,7 @@ public class Stun extends Thread {
         System.out.println("check 4 passed");
         //verify magic cookie
         for (int i = 4; i < 8; i++) {
-            if (message[i] != magic[i - 32]) throw new BadRequestException("invalid magic cookie");
+            if (message[i] != magic[i - 4]) throw new BadRequestException("invalid magic cookie");
         }
         System.out.println("check 5 passed - packet OK!");
         //if the message is an indication it warrants no response

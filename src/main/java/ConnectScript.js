@@ -8,7 +8,7 @@ function generateRemote(){
     webRTC = new RTCPeerConnection({
         iceServers: [
             {
-                urls: "stun:127.0.0.1:3478",
+                urls: "stun:13.48.195.80:3478",
             },
         ],
     });
@@ -37,7 +37,7 @@ function connectToRemote(rmDescription){
     const WebRTCConnection = new RTCPeerConnection({
         iceServers: [
             {
-                urls: "stun:127.0.0.1:3478",
+                urls: "stun:13.48.195.80:3478",
             },
         ],
     });
