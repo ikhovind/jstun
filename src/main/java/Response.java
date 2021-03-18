@@ -1,7 +1,7 @@
 import java.net.DatagramPacket;
 import java.util.Arrays;
 
-public class Attribute {
+public class Response {
     private static final int magicCookie = 0x2112A442;
     private static final int errorClass = 0b00000100010000;
     private static final int bindingMethod = 0b00000000000001;
@@ -9,7 +9,7 @@ public class Attribute {
     private String header;
     private String body;
 
-    public Attribute(boolean validMessage, byte[] data){
+    public Response(boolean validMessage, byte[] data){
         formulateHeader(validMessage, data);
         body = "";
     }
@@ -132,8 +132,25 @@ public class Attribute {
         header = header.substring(0, 16) + binLength + header.substring(32);
     }
 
-    public String getResponse(){
+    private String getResponse(){
         insertLength();
         return header + body;
+    }
+
+    private byte[] binaryStringToByteArray(String str) {
+        byte[] bytes = new byte[str.length() / 8];
+        int start = 0, end = 8;
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) Integer.parseInt(String.format("%8s", Integer.parseInt(str.substring(start, end))).replace(" ", "0"), 2);
+            start += 8;
+            end += 8;
+        }
+
+        return bytes;
+    }
+
+    public DatagramPacket getDataGramPacket(){
+        byte[] responseArray = binaryStringToByteArray(getResponse());
+        return new DatagramPacket(binaryStringToByteArray(getResponse()), responseArray.length);
     }
 }
