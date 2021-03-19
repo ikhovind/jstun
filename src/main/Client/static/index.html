@@ -6,10 +6,18 @@
 </head>
 <body>
 <div class="container">
-    <input class="buttons" onclick="document.location='https://vg.no'" id="generateButton" type="submit" value="Create new chat">
-    <input class="buttons" onclick="document.location='https://nrk.no'" id="joinButton" type="submit" value="Join existing chat">
-
+    <input class="buttons" id="generateButton" type="submit" value="Create new chat">
+    <input class="buttons" id="joinButton" type="submit" value="Join existing chat">
 </div>
+
+<script>
+    document.getElementById("generateButton").addEventListener("click", () => {
+        document.location='https://vg.no'
+    });
+    document.getElementById("joinButton").addEventListener("click", () => {
+        document.location='https://nrk.no'
+    });
+</script>
 
 </body>
 <style>
