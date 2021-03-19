@@ -73,14 +73,14 @@ public class Stun extends Thread {
         boolean running = true;
 
         while (running) {
-            DatagramPacket packet
-                    = new DatagramPacket(buf, buf.length);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             try {
+                System.out.println("package recieved");
                 if(verifyMessage(packet.getData())) {
                     //  Begins building the response by getting transaction ID from the client,
                     //  and uses when creating the response header
@@ -104,6 +104,9 @@ public class Stun extends Thread {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+                else{
+                    System.out.println("invalid package");
                 }
             } catch (BadRequestException e) {
                 //the message is invalid
