@@ -80,7 +80,7 @@ public class Stun extends Thread {
                 e.printStackTrace();
             }
             try {
-                System.out.println("package recieved");
+                System.out.println("package recieved in updated app");
                 if(verifyMessage(packet.getData())) {
                     //  Begins building the response by getting transaction ID from the client,
                     //  and uses when creating the response header
