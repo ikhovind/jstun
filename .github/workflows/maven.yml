@@ -34,7 +34,7 @@ jobs:
         - run: touch ~/.ssh/id_rsa
         - run: chmod 600 ~/.ssh/id_rsa
         - run: echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        - run: scp -i ~/.ssh/id_rsa -r src/ app@ec2-13-48-195-80.eu-north-1.compute.amazonaws.com:app/jstun
+        - run: scp -i ~/.ssh/id_rsa -r $(pwd) app@ec2-13-48-195-80.eu-north-1.compute.amazonaws.com:jstun
       env:
         SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
         SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
