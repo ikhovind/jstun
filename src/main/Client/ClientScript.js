@@ -40,7 +40,11 @@ WebRTCConnection.ondatachannel = (event) => {
     if (event.channel.label == 'chat') {
         chatChannel = event.channel;
         chatChannel.onmessage = (event) => console.log('onmessage:', event.data);
-        chatChannel.onopen = () => console.log('onopen');
+        chatChannel.onopen = () => {
+            console.log('onopen');
+            document.getElementById("descriptor1").hidden = true;
+            document.getElementById("descriptor2").hidden = true;
+        }
         chatChannel.onclose = () => console.log('onclose');
     }
 };

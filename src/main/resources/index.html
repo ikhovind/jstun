@@ -13,14 +13,18 @@
 
         <label for="remoteDescription">Enter remoteDescription you want to connect to, or generate your own</label>
         <textarea id="remoteDescription" name="subject" placeholder="Write something.." style="height:200px"></textarea>
-        <input id="generateRemote" type="submit" value="generate remote description">
+
+        <label for="localDescription">This is your localDescription, send this to the other person</label>
+        <textarea id="localDescription" name="subject" placeholder="Write something.." style="height:200px"></textarea>
+
+        <input id="generateRemote" type="submit" value="Generate Remote Description">
         <br>
-        <input id="connectToRemote" type="submit" value="connect">
+
+        <input id="connectToRemote" type="submit" value="Connect">
 
     </form>
 </div>
-<script src="ConnectScript.js"></script>
-
+<script src="../Client/ConnectScript.js"></script>
 </body>
 <style>
     /* Style inputs with type="text", select elements and textareas */
