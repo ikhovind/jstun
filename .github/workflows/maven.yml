@@ -35,7 +35,7 @@ jobs:
         with:
           switches: -avzr --delete
           path: src/
-          remote_path: /stun/
+          remote_path: stun/
           remote_host: ec2-13-48-195-80.eu-north-1.compute.amazonaws.com
           remote_user: app
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}        
