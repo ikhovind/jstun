@@ -34,7 +34,7 @@ jobs:
         uses: burnett01/rsync-deployments@4.1
         with:
           switches: -avzr --delete
-          path: src/
+          path: ./
           remote_path: stun/
           remote_host: ec2-13-48-195-80.eu-north-1.compute.amazonaws.com
           remote_user: app
