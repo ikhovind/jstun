@@ -39,5 +39,11 @@ jobs:
           remote_host: ec2-13-48-195-80.eu-north-1.compute.amazonaws.com
           remote_user: app
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}        
+      - name: compile maven
+        run: |
+          ssh app@ec2-13-48-195-80.eu-north-1.compute.amazonaws.com mvn package -f stun/pom.xml
+          ssh app@ec2-13-48-195-80.eu-north-1.compute.amazonaws.com systemctl --user restart app
+        env:
           SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
           SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
+
