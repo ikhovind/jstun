@@ -41,6 +41,11 @@ jobs:
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}        
       - name: compile maven
         run: |
+          mkdir ~/.ssh
+          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          touch ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa          
           ssh app@ec2-13-48-195-80.eu-north-1.compute.amazonaws.com mvn package -f stun/pom.xml
           ssh app@ec2-13-48-195-80.eu-north-1.compute.amazonaws.com systemctl --user restart app
         env:
