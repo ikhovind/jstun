@@ -11,11 +11,13 @@
 </div>
 
 <script>
+    localStorage.setItem("loadForm", "true");
     document.getElementById("generateButton").addEventListener("click", () => {
         localStorage.setItem("joinGenerate","generate")
         document.location="chatForm.html"
     });
     document.getElementById("joinButton").addEventListener("click", () => {
+
         localStorage.setItem("joinGenerate","join");
         document.location="chatForm.html"
     });

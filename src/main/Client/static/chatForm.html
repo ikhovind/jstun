@@ -4,28 +4,28 @@
     <meta charset="UTF-8">
     <title>Chat2Be</title>
 </head>
-<body>
+<body onload="loadForm();">
 
+    <div id="form">
+        <div class = "header">
+            <h1 id="formHeader">Enter remote description to join chat</h1>
+            </div>
+            <div>
+                <div class="descriptorContainer col-6 col-s-12">
+                    <label for="leftInputBox" id="descriptor1Label">local description</label>
+                    <textarea class="descriptor" id="leftInputBox"></textarea>
+                </div>
+                <div class="descriptorContainer col-6 col-s-12">
+                    <label for="rightInputBox" id="descriptor2Label">remote description</label>
+                    <textarea class="descriptor" id="rightInputBox"></textarea>
+                </div>
 
-<div class = "header">
-    <h1 id="formHeader">Enter remote description to join chat</h1>
-</div>
-<div>
-    <div class="descriptorContainer col-6 col-s-12">
-        <label for="leftInputBox" id="descriptor1Label">local description</label>
-        <textarea class="descriptor" id="leftInputBox"></textarea>
+                <div class="col-4">
+                    <button id="chatButton">connect</button>
+                </div>
+            </div>
+        <script src="../WebScript.js"></script>
     </div>
-    <div class="descriptorContainer col-6 col-s-12">
-        <label for="rightInputBox" id="descriptor2Label">remote description</label>
-        <textarea class="descriptor" id="rightInputBox"></textarea>
-    </div>
-
-    <div class="col-4">
-        <button id="chatButton">connect</button>
-    </div>
-</div>
-
-<script src="../WebScript.js"></script>
 </body>
 <style>
     @media only screen and (min-width: 100px){

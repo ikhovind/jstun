@@ -1,16 +1,3 @@
-window.onload = () => {
-    document.getElementById("leftInputBox").readOnly = true;
-
-    if(localStorage.getItem("joinGenerate") === "join"){
-        document.getElementById("chatButton").addEventListener("click", ()=> acceptOffer());
-    }
-    else{
-        createOffer();
-        document.getElementById("chatButton").addEventListener("click", ()=> openConnecion());
-      }
-}
-
-let chatChannel;
 
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
@@ -19,50 +6,94 @@ const WebRTCConnection = new RTCPeerConnection({
         },
     ],
 });
+chatChannel = WebRTCConnection.createDataChannel('chat');
 
-function createOffer(){
-    chatChannel = WebRTCConnection.createDataChannel('chat');
-    chatChannel.onmessage = (event) => console.log('onmessage:', event.data);
-    chatChannel.onopen = () => console.log('onopen');
-    chatChannel.onclose = () => console.log('onclose');
+function loadForm() {
+    document.getElementById("leftInputBox").readOnly = true;
 
-    WebRTCConnection.onicecandidate = (event) => {
-        if (event.candidate)
-            document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
-        document.getElementById("leftInputBox").readOnly = true;
-    };
-
-    WebRTCConnection.createOffer().then((localDescription) => {
-        WebRTCConnection.setLocalDescription(localDescription);
-    });
-}
-
-function acceptOffer(){
-    const remoteDescription = document.getElementById("rightInputBox").value;
+    if (localStorage.getItem("joinGenerate") === "join") {
+        document.getElementById("chatButton").addEventListener("click", () => acceptOffer());
+    } else {
+        createOffer();
+        document.getElementById("chatButton").addEventListener("click", () => openConnecion());
+    }
 
 
-    WebRTCConnection.ondatachannel = (event) => {
-        if (event.channel.label == 'chat') {
-            chatChannel = event.channel;
-            chatChannel.onmessage = (event) => console.log('onmessage:', event.data);
-            chatChannel.onopen = () => console.log('onopen');
-            chatChannel.onclose = () => console.log('onclose');
+    function createOffer() {
+        chatChannel.onmessage = (event) => console.log('onmessage:', event.data);
+        chatChannel.onopen = () => {
+            document.location = "chatWindow.html";
         }
-    };
+        chatChannel.onclose = () => console.log('onclose');
 
-    WebRTCConnection.onicecandidate = (event) => {
-        if (event.candidate)
-            document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
-    };
+        WebRTCConnection.onicecandidate = (event) => {
+            if (event.candidate)
+                document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
+            document.getElementById("leftInputBox").readOnly = true;
+        };
 
-    WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
+        WebRTCConnection.createOffer().then((localDescription) => {
+            WebRTCConnection.setLocalDescription(localDescription);
+        });
+    }
 
-    WebRTCConnection.createAnswer().then((localDescription) => {
-        WebRTCConnection.setLocalDescription(localDescription);
-    });
+    function acceptOffer() {
+        const remoteDescription = document.getElementById("rightInputBox").value;
+
+
+        WebRTCConnection.ondatachannel = (event) => {
+            if (event.channel.label == 'chat') {
+                chatChannel = event.channel;
+                //?
+                chatChannel.onmessage = (event) => recieveMessage(event.data);
+                chatChannel.onopen = () => {
+                    document.location = "chatWindow.html";
+                }
+                chatChannel.onclose = () => console.log('onclose');
+            }
+        };
+
+        WebRTCConnection.onicecandidate = (event) => {
+            if (event.candidate)
+                document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
+        };
+
+        WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
+
+        WebRTCConnection.createAnswer().then((localDescription) => {
+            WebRTCConnection.setLocalDescription(localDescription);
+        });
+    }
+
+    function openConnecion() {
+        const remoteDescription = document.getElementById("rightInputBox").value;
+        WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
+        console.log("json: " + JSON.stringify(WebRTCConnection));
+
+    }
 }
 
-function openConnecion(){
-    const remoteDescription = document.getElementById("rightInputBox").value;
-    WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
+function setChat(){
+    console.log("ok dette funker");
+    document.getElementById("sendButton").addEventListener("click", ()=>sendMessage());
+/*
+    chatChannel.onmessage = (event) => {
+        console.log("heihva faen")
+        recieveMessage(event.data);
+    }
+
+ */
+    function sendMessage(){
+        let message = document.getElementById("inputText").value;
+        document.getElementById("inputText").value = "";
+        document.getElementById("chatDiv").innerHTML += ("<p style='text-align: right'>" + message + "</p>");
+        chatChannel.send("<p style='text-align: right'>" + message + "</p>")
+        //do something with webrtc here
+    }
+
+    function recieveMessage(message){
+        //called from eventListener on webRTC :)
+        document.getElementById("chatDiv").innerHTML += ("<p style='text-align: left'>" + message + "</p>");
+
+    }
 }
