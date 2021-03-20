@@ -12,10 +12,12 @@
 
 <script>
     document.getElementById("generateButton").addEventListener("click", () => {
-        document.location='https://vg.no'
+        localStorage.setItem("joinGenerate","generate")
+        document.location="chatForm.html"
     });
     document.getElementById("joinButton").addEventListener("click", () => {
-        document.location='https://nrk.no'
+        localStorage.setItem("joinGenerate","join");
+        document.location="chatForm.html"
     });
 </script>
 
