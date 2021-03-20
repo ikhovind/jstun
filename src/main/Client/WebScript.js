@@ -149,14 +149,14 @@ function sendMessage(){
     console.log("sent");
     let message = document.getElementById("inputText").value;
     document.getElementById("inputText").value = "";
-    document.getElementById("chatDiv").innerHTML += ("<p style='text-align: right'>" + message + "</p>");
-    chatChannel.send("<p style='text-align: right'>" + message + "</p>")
+    document.getElementById("chatDiv").innerHTML += ("<p  style=\"text-align:right\"> " + message.replace(/<\/?[^>]+(>|$)/g, "") + "</p>");
+    chatChannel.send(message)
     //do something with webrtc here
 }
 
 function recieveMessage(message){
     //called from eventListener on webRTC :)
-    document.getElementById("chatDiv").innerHTML += ("<p style='text-align: left'>" + message + "</p>");
+    document.getElementById("chatDiv").innerHTML += ("<p>" + message.replace(/<\/?[^>]+(>|$)/g, "") + "</p>");
     console.log(message)
 }
 
