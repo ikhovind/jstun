@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
-<body onload="setChat();">
+<body>
     <div id="chat" >
         <div class="container">
             <h1>Chat with your connection</h1>
@@ -13,7 +13,7 @@
             </div>
             <div class="chatFooter">
                 <textarea id="inputText" name="message" placeholder="Write something.."></textarea>
-                <input id="sendButton" type="submit"/>
+                <input id="sendButton" onload="document.getElementById('sendButton').addEventListener('click', ()=>sendMessage());" type="submit"/>
             </div>
         </div>
         <script src="../WebScript.js"></script>

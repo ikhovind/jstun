@@ -1,3 +1,75 @@
+let htmlTest = "<!DOCTYPE html>\n" +
+    "<html lang=\"en\">\n" +
+    "<head>\n" +
+    "    <meta charset=\"UTF-8\">\n" +
+    "    <title>Title</title>\n" +
+    "</head>\n" +
+    "<body>\n" +
+    "    <div id=\"chat\" >\n" +
+    "        <div class=\"container\">\n" +
+    "            <h1>Chat with your connection</h1>\n" +
+    "            <div id=\"chatDiv\" class=\"chatBox\">\n" +
+    "\n" +
+    "            </div>\n" +
+    "            <div class=\"chatFooter\">\n" +
+    "                <textarea id=\"inputText\" name=\"message\" placeholder=\"Write something..\"></textarea>\n" +
+    "                <input id=\"sendButton\" onclick='sendMessage()' \" type=\"submit\"/>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <script src=\"../WebScript.js\"></script>\n" +
+    "    </div>\n" +
+    "</body>\n" +
+    "<style>\n" +
+    "    /* Style inputs with type=\"text\", select elements and textareas */\n" +
+    "    .chatBox {\n" +
+    "        overflow: auto;\n" +
+    "        width: 100%; /* Full width */\n" +
+    "        height: 30vw;\n" +
+    "        padding: 12px; /* Some padding */\n" +
+    "        border: 1px solid #ccc; /* Gray border */\n" +
+    "        border-radius: 4px; /* Rounded borders */\n" +
+    "        box-sizing: border-box; /* Make sure that padding and width stays in place */\n" +
+    "        margin-top: 6px; /* Add a top margin */\n" +
+    "        margin-bottom: 16px; /* Bottom margin */\n" +
+    "        resize: vertical; /* Allow the user to vertically resize the textarea (not horizontally) */\n" +
+    "        background-color: #ffffff;\n" +
+    "    }\n" +
+    "\n" +
+    "    #inputText{\n" +
+    "        padding: 12px; /* Some padding */\n" +
+    "        border: 1px solid #ccc; /* Gray border */\n" +
+    "        border-radius: 4px; /* Rounded borders */\n" +
+    "        box-sizing: border-box; /* Make sure that padding and width stays in place */\n" +
+    "        margin-top: 6px; /* Add a top margin */\n" +
+    "        margin-bottom: 16px; /* Bottom margin */\n" +
+    "        resize: vertical;\n" +
+    "        width: 100%\n" +
+    "    }\n" +
+    "    #sendButton{\n" +
+    "        width: 20%;\n" +
+    "        background-color: #4CAF50;\n" +
+    "        color: white;\n" +
+    "        padding: 12px 12px;\n" +
+    "        border: none;\n" +
+    "        border-radius: 4px;\n" +
+    "        cursor: pointer;\n" +
+    "    }\n" +
+    "\n" +
+    "    /* When moving the mouse over the submit button, add a darker green color */\n" +
+    "    input[type=submit]:hover {\n" +
+    "        background-color: #45a049;\n" +
+    "    }\n" +
+    "\n" +
+    "    /* Add a background color and some padding around the form */\n" +
+    "    .container {\n" +
+    "        border-radius: 5px;\n" +
+    "        padding: 20px;\n" +
+    "    }\n" +
+    "    body{\n" +
+    "        background-color: #f2f2f2;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "</html>"
 
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
@@ -8,7 +80,6 @@ const WebRTCConnection = new RTCPeerConnection({
 });
 chatChannel = WebRTCConnection.createDataChannel('chat');
 
-function loadForm() {
     document.getElementById("leftInputBox").readOnly = true;
 
     if (localStorage.getItem("joinGenerate") === "join") {
@@ -20,16 +91,17 @@ function loadForm() {
 
 
     function createOffer() {
-        chatChannel.onmessage = (event) => console.log('onmessage:', event.data);
+        chatChannel.onmessage = (event) => recieveMessage(event.data);
         chatChannel.onopen = () => {
-            document.location = "chatWindow.html";
+            //document.location = "chatWindow.html";
+            document.documentElement.innerHTML = htmlTest;
         }
         chatChannel.onclose = () => console.log('onclose');
 
         WebRTCConnection.onicecandidate = (event) => {
             if (event.candidate)
                 document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
-            document.getElementById("leftInputBox").readOnly = true;
+                document.getElementById("leftInputBox").readOnly = true;
         };
 
         WebRTCConnection.createOffer().then((localDescription) => {
@@ -44,10 +116,11 @@ function loadForm() {
         WebRTCConnection.ondatachannel = (event) => {
             if (event.channel.label == 'chat') {
                 chatChannel = event.channel;
-                //?
                 chatChannel.onmessage = (event) => recieveMessage(event.data);
                 chatChannel.onopen = () => {
-                    document.location = "chatWindow.html";
+                    //document.location = "chatWindow.html";
+                    document.documentElement.innerHTML = htmlTest;
+
                 }
                 chatChannel.onclose = () => console.log('onclose');
             }
@@ -65,35 +138,27 @@ function loadForm() {
         });
     }
 
-    function openConnecion() {
-        const remoteDescription = document.getElementById("rightInputBox").value;
-        WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
-        console.log("json: " + JSON.stringify(WebRTCConnection));
+function openConnecion() {
+    const remoteDescription = document.getElementById("rightInputBox").value;
+    WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
+    console.log("json: " + JSON.stringify(WebRTCConnection));
 
-    }
 }
 
-function setChat(){
-    console.log("ok dette funker");
-    document.getElementById("sendButton").addEventListener("click", ()=>sendMessage());
-/*
-    chatChannel.onmessage = (event) => {
-        console.log("heihva faen")
-        recieveMessage(event.data);
-    }
-
- */
-    function sendMessage(){
-        let message = document.getElementById("inputText").value;
-        document.getElementById("inputText").value = "";
-        document.getElementById("chatDiv").innerHTML += ("<p style='text-align: right'>" + message + "</p>");
-        chatChannel.send("<p style='text-align: right'>" + message + "</p>")
-        //do something with webrtc here
-    }
-
-    function recieveMessage(message){
-        //called from eventListener on webRTC :)
-        document.getElementById("chatDiv").innerHTML += ("<p style='text-align: left'>" + message + "</p>");
-
-    }
+function sendMessage(){
+    console.log("sent");
+    let message = document.getElementById("inputText").value;
+    document.getElementById("inputText").value = "";
+    document.getElementById("chatDiv").innerHTML += ("<p style='text-align: right'>" + message + "</p>");
+    chatChannel.send("<p style='text-align: right'>" + message + "</p>")
+    //do something with webrtc here
 }
+
+function recieveMessage(message){
+    //called from eventListener on webRTC :)
+    document.getElementById("chatDiv").innerHTML += ("<p style='text-align: left'>" + message + "</p>");
+    console.log(message)
+}
+
+
+
