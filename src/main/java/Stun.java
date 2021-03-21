@@ -8,13 +8,14 @@ import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.sql.SQLOutput;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 public class Stun {
     private org.slf4j.Logger log = LoggerFactory.getLogger(Stun.class);
-
+    private HashSet<Integer> knownAttributes = new HashSet<>();
     private static ExecutorService executor = Executors.newFixedThreadPool(2);
     private final int requestClass = 1;
     private final int indication = 0b00000000010000;
@@ -27,6 +28,9 @@ public class Stun {
     public Stun() throws SocketException {
         log.info("listening to port");
         socket = new DatagramSocket(3478);
+    }
+    private void addKnownAttributes(){
+        knownAttributes.addAll(Arrays.asList(0x0006, 0x0008, 0x000A, 0x0014, 0x0015, 0x0020));
     }
 
     private boolean verifyMessage(byte[] message) throws BadRequestException {
@@ -52,7 +56,7 @@ public class Stun {
             throw new BadRequestException("Illegally short header");
         }
         //todo check how long messages clients can send
-        if((((message[2] & 0xff) << 4) | message[3] & 0xff) > 9999){
+        if((((message[2] & 0xff) << 8) | message[3] & 0xff) > 9999){
             log.error("illegally long message");
             throw new BadRequestException("Illegally long message");
         }
@@ -98,6 +102,27 @@ public class Stun {
         socket.close();
     }
 
+    //handles attributes, returns null if all are understood, array of not understood attributes if not
+    private Integer[] comprehendAttributes(byte[] message){
+        ArrayList<Integer> unknows = new ArrayList<>();
+        if(message.length > 20){
+            for(int i = 20; i < message.length; i++){
+                int attribute = ((message[20] & 0xff) << 8) | (message[21] & 0xff);
+                //comprehension required
+                if(attribute < 0x7FFF){
+                    if(!knownAttributes.contains(attribute)){
+                        unknows.add(attribute);
+                    }
+                    else{
+                        //handle attribute here lol
+                    }
+                }
+                log.info("client used attribute: " + attribute);
+            }
+        }
+        return unknows.toArray(new Integer[0]);
+    }
+
     private void respond(DatagramPacket packet) {
         try {
             log.info("package recieved in updated app");
@@ -105,15 +130,24 @@ public class Stun {
                 log.info("packet verified");
                 //  Begins building the response by getting transaction ID from the client,
                 //  and uses when creating the response header
-                Response response = new Response(true, packet.getData());
-                //  Adds attributes to the response
-                response.insertMappedAddress(packet.getAddress().getAddress(), packet.getPort());
-                try {
-                    response.insertXorMappedAdress(packet.getAddress().getAddress(), packet.getData(), packet.getPort());
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                Response response;
+                //if any attributes are unknown we return an error message
+                Integer[] unknownAttributes = comprehendAttributes(packet.getData());
+                if(unknownAttributes.length > 0){
+                    response = new Response(false, packet.getData());
+                    response.insertErrorCodeAttribute(420, "Unknown attribute");
+                    response.insertUnknownAttributes(unknownAttributes);
                 }
-
+                else {
+                    response = new Response(true, packet.getData());
+                    //  Adds attributes to the response
+                    response.insertMappedAddress(packet.getAddress().getAddress(), packet.getPort());
+                    try {
+                        response.insertXorMappedAdress(packet.getAddress().getAddress(), packet.getData(), packet.getPort());
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+                }
                 //  Prepares the response as a package to be sent
                 DatagramPacket send = response.getDataGramPacket();
                 send.setAddress(packet.getAddress());
@@ -150,7 +184,6 @@ public class Stun {
     }
 
     public static void main(String[] args) throws IOException {
-
         Stun server = new Stun();
         executor.execute(server::listenUDP);
     }

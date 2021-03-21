@@ -1,5 +1,0 @@
-2021-03-21 17:55:28.113 [main] INFO  Stun - listening to port
-2021-03-21 17:55:28.119 [pool-1-thread-1] INFO  Stun - waiting for packet
-2021-03-21 17:55:30.437 [pool-1-thread-1] INFO  Stun - waiting for packet
-2021-03-21 17:55:30.438 [pool-1-thread-2] INFO  Stun - package recieved in updated app
-2021-03-21 17:55:30.439 [pool-1-thread-2] ERROR Stun - Package could not be verified
