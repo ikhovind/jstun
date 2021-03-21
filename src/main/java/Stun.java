@@ -1,17 +1,31 @@
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sun.rmi.runtime.Log;
+
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.sql.SQLOutput;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
-public class Stun extends Thread {
+public class Stun {
+    private org.slf4j.Logger log = LoggerFactory.getLogger(Stun.class);
+
+    private static ExecutorService executor = Executors.newFixedThreadPool(2);
     private final int requestClass = 1;
     private final int indication = 0b00000000010000;
     private final int magicCookie = 0x2112A442;
     private DatagramSocket socket;
     private byte[] buf = new byte[256];
     private byte[] bindMethod = new byte[]{62, -17};
+
+
     public Stun() throws SocketException {
+        log.info("listening to port");
         socket = new DatagramSocket(3478);
     }
 
@@ -19,11 +33,11 @@ public class Stun extends Thread {
         byte[] magic = ByteBuffer.allocate(4).putInt(magicCookie).array();
         //first two bits zero
         if (message[0] >= 64) throw new BadRequestException("First two bits not zero");
-        System.out.println("check 1 passed");
+        log.info("check 1 passed");
         //is message request, responses are invalid and indications warrant no response
         if ((message[0] & 1) != 0) throw new BadRequestException("illegal class");
 
-        System.out.println("check 2 passed");
+        log.info("check 2 passed");
         //message method is binding
         if(((message[0] & bindMethod[0]) != 0 || (message[1] & bindMethod[1]) != 1)
                 //add other methods here
@@ -31,25 +45,25 @@ public class Stun extends Thread {
             throw new BadRequestException("invalid method");
         }
 
-        System.out.println("check 3 passed");
+        log.info("check 3 passed");
         //check that message length is sensible - client should only send header
         if(message.length < 20){
-            System.out.println("illegally short header");
+            log.info("illegally short header");
             throw new BadRequestException("Illegally short header");
         }
         //todo check how long messages clients can send
         if((((message[2] & 0xff) << 4) | message[3] & 0xff) > 9999){
-            System.out.println("illegally long message");
+            log.error("illegally long message");
             throw new BadRequestException("Illegally long message");
         }
 
 
-        System.out.println("check 4 passed");
+        log.info("check 4 passed");
         //verify magic cookie
         for (int i = 4; i < 8; i++) {
             if (message[i] != magic[i - 4]) throw new BadRequestException("invalid magic cookie");
         }
-        System.out.println("check 5 passed - packet OK!");
+        log.info("check 5 passed - packet OK!");
         //if the message is an indication it warrants no response
         return (message[1] & 16) == 0;
     }
@@ -69,67 +83,75 @@ public class Stun extends Thread {
         System.out.println("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
     }
 
-    public void run() {
+    public void listenUDP() {
         boolean running = true;
-
         while (running) {
+            log.info("waiting for packet");
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            try {
-                System.out.println("package recieved in updated app");
-                if(verifyMessage(packet.getData())) {
-                    //  Begins building the response by getting transaction ID from the client,
-                    //  and uses when creating the response header
-                    Response response = new Response(true, packet.getData());
-                    //  Adds attributes to the response
-                    response.insertMappedAddress(packet.getAddress().getAddress(), packet.getPort());
-                    try {
-                        response.insertXorMappedAdress(packet.getAddress().getAddress(), packet.getData(), packet.getPort());
-                    } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
-                    }
-
-                    //  Prepares the response as a package to be sent
-                    DatagramPacket send = response.getDataGramPacket();
-                    send.setAddress(packet.getAddress());
-                    send.setPort(packet.getPort());
-
-                    try {
-                        System.out.println("sent packet with address: " + send.getSocketAddress() + "\nwith source address: " + packet.getSocketAddress());
-                        socket.send(send);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                else{
-                    System.out.println("invalid package");
-                }
-            } catch (BadRequestException e) {
-                //the message is invalid
-                Response response = new Response(false, packet.getData());
-                //Bad Request
-                response.insertErrorCodeAttribute(400, "Bad Request: " + e.getMessage());
-                try {
-                    //  Prepares the response as a package to be sent
-                    DatagramPacket send = response.getDataGramPacket();
-                    send.setAddress(packet.getAddress());
-                    send.setPort(packet.getPort());
-                    socket.send(send);
-                }
-                catch (IOException ioException){
-                    ioException.printStackTrace();
-                }
-            }
+            executor.execute(()->respond(packet));
         }
         socket.close();
     }
 
+    private void respond(DatagramPacket packet) {
+        try {
+            log.info("package recieved in updated app");
+            if(verifyMessage(packet.getData())) {
+                log.info("packet verified");
+                //  Begins building the response by getting transaction ID from the client,
+                //  and uses when creating the response header
+                Response response = new Response(true, packet.getData());
+                //  Adds attributes to the response
+                response.insertMappedAddress(packet.getAddress().getAddress(), packet.getPort());
+                try {
+                    response.insertXorMappedAdress(packet.getAddress().getAddress(), packet.getData(), packet.getPort());
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+
+                //  Prepares the response as a package to be sent
+                DatagramPacket send = response.getDataGramPacket();
+                send.setAddress(packet.getAddress());
+                send.setPort(packet.getPort());
+
+                try {
+                    log.info("sent packet with address: " + send.getSocketAddress() + "\nwith source address: " + packet.getSocketAddress());
+                    socket.send(send);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            else{
+                //it is an indication
+                log.info("package warrants no response");
+            }
+        } catch (BadRequestException e) {
+            log.error("Package could not be verified");
+            //the message is invalid
+            Response response = new Response(false, packet.getData());
+            //Bad Request
+            response.insertErrorCodeAttribute(400, "Bad Request: " + e.getMessage());
+            try {
+                //  Prepares the response as a package to be sent
+                DatagramPacket send = response.getDataGramPacket();
+                send.setAddress(packet.getAddress());
+                send.setPort(packet.getPort());
+                socket.send(send);
+            }
+            catch (IOException ioException){
+                log.error(ioException.getMessage());
+            }
+        }
+    }
+
     public static void main(String[] args) throws IOException {
+
         Stun server = new Stun();
-        server.start();
+        executor.execute(server::listenUDP);
     }
 }
