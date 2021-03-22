@@ -95,7 +95,7 @@ public class Response {
 
     public void insertErrorCodeAttribute(int code, String errorMessage){
         body += String.format("%16s", Integer.toBinaryString(0x0009)); //type for error code
-        int lengthBefore = body.length()/8;
+        int lengthBefore = body.length();
         if(errorMessage.length() > 127 || errorMessage.getBytes(StandardCharsets.UTF_8).length > 763){
             throw new IllegalArgumentException("Given error message exceeds maximum length of 127 characters or 763 bytes");
         }
@@ -110,20 +110,33 @@ public class Response {
         for(Byte b : errorMessage.getBytes(StandardCharsets.UTF_8)){
             body += Integer.toBinaryString(b & 0xff);
         }
-        int length =  body.length()/8 - lengthBefore;
-        body = body.substring(0, lengthBefore * 8) +
-                String.format("%16s", Integer.toBinaryString(length)) +
-                    body.substring(lengthBefore * 8);
+        int length =  body.length() - lengthBefore;
+        body = body.substring(0, lengthBefore) +
+                String.format("%16s", Integer.toBinaryString(length / 8)) +
+                    body.substring(lengthBefore);
         //TODO this pads after value, maybe you are supposed to do it before
         body += String.format("%" + body.length() % 32 + "s", 0).replace(" ", "0");
     }
 
     public void insertUnknownAttributes(Integer[] attributes){
-        body += String.format("%16s", Integer.toBinaryString(0x000A)); // 0x000A is the attribute type for unknown attribute
-        //TODO insert length
-        //TODO insert unknown attribute types
-        //TODO insert padding
 
+        int lengthBefore = body.length();
+        body += String.format("%16s", Integer.toBinaryString(0x000A)); // 0x000A is the attribute type for unknown attribute
+
+        //attribute types we don't know
+        for(Integer i : attributes){
+            body += Integer.toBinaryString(i);
+        }
+
+
+        int length =  body.length() - lengthBefore;
+        //insert length
+        body = body.substring(0, lengthBefore) +
+                String.format("%16s", Integer.toBinaryString(length/8)) +
+                body.substring(lengthBefore);
+
+        //TODO this pads after value, maybe you are supposed to do it before
+        body += String.format("%" + body.length() % 32 + "s", 0).replace(" ", "0");
     }
 
     private static byte[] getTransactionID(byte[] data) {
