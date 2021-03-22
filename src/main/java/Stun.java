@@ -30,7 +30,8 @@ public class Stun {
         socket = new DatagramSocket(3478);
     }
     private void addKnownAttributes(){
-        knownAttributes.addAll(Arrays.asList(0x0006, 0x0008, 0x000A, 0x0014, 0x0015, 0x0020));
+        //TODO insert attributes we know here
+        knownAttributes.addAll(Arrays.asList());
     }
 
     private boolean verifyMessage(byte[] message) throws BadRequestException {
@@ -55,8 +56,8 @@ public class Stun {
             log.info("illegally short header");
             throw new BadRequestException("Illegally short header");
         }
-        //todo check how long messages clients can send
-        if((((message[2] & 0xff) << 8) | message[3] & 0xff) > 9999){
+        //if the sent message is too large for the buffer
+        if((((message[2] & 0xff) << 8) | message[3] & 0xff) > 256){
             log.error("illegally long message");
             throw new BadRequestException("Illegally long message");
         }
@@ -104,14 +105,15 @@ public class Stun {
 
     //handles attributes, returns null if all are understood, array of not understood attributes if not
     private Integer[] comprehendAttributes(byte[] message){
-        ArrayList<Integer> unknows = new ArrayList<>();
-        if(message.length > 20){
-            for(int i = 20; i < message.length; i++){
+        int messageLength = ((message[2] & 0xff) << 8) | (message[3] & 0xff);
+        ArrayList<Integer> unknowns = new ArrayList<>();
+        if(messageLength > 20){
+            for(int i = 20; i < messageLength; i++){
                 int attribute = ((message[20] & 0xff) << 8) | (message[21] & 0xff);
                 //comprehension required
                 if(attribute < 0x7FFF){
                     if(!knownAttributes.contains(attribute)){
-                        unknows.add(attribute);
+                        unknowns.add(attribute);
                     }
                     else{
                         //handle attribute here lol
@@ -120,7 +122,7 @@ public class Stun {
                 log.info("client used attribute: " + attribute);
             }
         }
-        return unknows.toArray(new Integer[0]);
+        return unknowns.toArray(new Integer[0]);
     }
 
     private void respond(DatagramPacket packet) {

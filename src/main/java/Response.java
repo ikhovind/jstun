@@ -34,7 +34,6 @@ public class Response {
         for (Byte b : ip) {
             res += String.format("%8s", Integer.toBinaryString((b & 0xff)));
         }
-        System.out.println("Mapped Address: " + res.replace(" ", "0"));
         body += res.replace(" ", "0");
     }
 

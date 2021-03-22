@@ -74,7 +74,7 @@ let htmlTest = "<!DOCTYPE html>\n" +
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
         {
-            urls: 'stun:13.48.195.80:3478',
+            urls: 'stun:127.0.0.1:3478',
         },
     ],
 });
