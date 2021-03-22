@@ -101,8 +101,25 @@ public class Stun {
                 log.error(e.getMessage());
             }
             executor.execute(()->{
-                    respond(packet);
-                    //todo send packet here
+                    log.info("package recieved in updated app");
+                    //  Begins building the response by getting transaction ID from the client,
+                    //  and uses when creating the response header
+                    Response response = formulateResponse(packet.getData(), packet.getAddress().getAddress(), packet.getPort());
+                    if(response != null) {
+                        //  Prepares the response as a package to be sent
+                        DatagramPacket send = new DatagramPacket(response.getByteResponse(), response.getByteResponse().length);
+                        send.setAddress(packet.getAddress());
+                        send.setPort(packet.getPort());
+
+                        try {
+                            log.info("sent packet with address: " + send.getSocketAddress() + "\nwith source address: " + packet.getSocketAddress());
+                            socket.send(send);
+                        } catch (IOException e) {
+                            log.error(e.getMessage());
+                        }
+                    } else{
+                        log.info("package warrants no response");
+                    }
                 }
             );
         }
@@ -123,6 +140,7 @@ public class Stun {
                     } catch (IOException ioException) {
                         log.error(ioException.getMessage());
                     }
+
                 });
             }
         } catch (IOException e){
@@ -131,10 +149,18 @@ public class Stun {
     }
 
     private void handleTCPConnection(Socket socket) throws IOException {
+        log.info("handling tcp-connection");
         byte[] buffer = new byte[256];
         DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
         dataInputStream.readFully(buffer);
-
+        Response response = formulateResponse(buffer, socket.getInetAddress().getAddress(), socket.getPort());
+        if (response != null) {
+            log.info("responding to tcp-connection");
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+            dos.write(response.getByteResponse());
+        } else{
+            log.info("tcp-connection warrants no response");
+        }
     }
 
     //handles attributes, returns null if all are understood, array of not understood attributes if not
@@ -159,67 +185,47 @@ public class Stun {
         return unknowns.toArray(new Integer[0]);
     }
 
-    //todo make return a byte array, parameter should be message and ip-addresses, can then be used for tcp as well
     private void respond(DatagramPacket packet) {
+    }
+
+    private Response formulateResponse(byte[] message, byte[] address, int port)  {
         try {
-            log.info("package recieved in updated app");
-            if(verifyMessage(packet.getData())) {
-                log.info("packet verified");
-                //  Begins building the response by getting transaction ID from the client,
-                //  and uses when creating the response header
+            if(verifyMessage(message)) {
                 Response response;
                 //if any attributes are unknown we return an error message
-                Integer[] unknownAttributes = comprehendAttributes(packet.getData());
+                Integer[] unknownAttributes = comprehendAttributes(message);
                 if(unknownAttributes.length > 0){
-                    response = new Response(false, packet.getData());
+
+                    response = new Response(false, message);
                     response.insertErrorCodeAttribute(420, "Unknown attribute");
                     response.insertUnknownAttributes(unknownAttributes);
                 }
                 else {
-                    response = new Response(true, packet.getData());
+                    response = new Response(true, message);
                     //  Adds attributes to the response
-                    response.insertMappedAddress(packet.getAddress().getAddress(), packet.getPort());
+                    response.insertMappedAddress(address, port);
                     try {
-                        response.insertXorMappedAdress(packet.getAddress().getAddress(), packet.getData(), packet.getPort());
+                        response.insertXorMappedAdress(address, message, port);
                     } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
+                        log.error(e.getMessage());
                     }
                 }
-                //  Prepares the response as a package to be sent
-                DatagramPacket send = response.getDataGramPacket();
-                send.setAddress(packet.getAddress());
-                send.setPort(packet.getPort());
-
-                try {
-                    log.info("sent packet with address: " + send.getSocketAddress() + "\nwith source address: " + packet.getSocketAddress());
-                    socket.send(send);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                return response;
             }
             else{
                 //it is an indication
                 log.info("package warrants no response");
+                return null;
             }
         } catch (BadRequestException e) {
-            log.error("Package could not be verified");
+            log.error("Package could not be verified - sending error message");
             //the message is invalid
-            Response response = new Response(false, packet.getData());
+            Response response = new Response(false, message);
             //Bad Request
             response.insertErrorCodeAttribute(400, "Bad Request: " + e.getMessage());
-            try {
-                //  Prepares the response as a package to be sent
-                DatagramPacket send = response.getDataGramPacket();
-                send.setAddress(packet.getAddress());
-                send.setPort(packet.getPort());
-                socket.send(send);
-            }
-            catch (IOException ioException){
-                log.error(ioException.getMessage());
-            }
+            return response;
         }
     }
-
 
 
     public static void main(String[] args) throws IOException {

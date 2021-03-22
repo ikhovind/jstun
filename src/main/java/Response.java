@@ -194,8 +194,7 @@ public class Response {
         return bytes;
     }
 
-    public DatagramPacket getDataGramPacket(){
-        byte[] responseArray = binaryStringToByteArray(getResponse());
-        return new DatagramPacket(binaryStringToByteArray(getResponse()), responseArray.length);
+    public byte[] getByteResponse(){
+        return binaryStringToByteArray(getResponse());
     }
 }
