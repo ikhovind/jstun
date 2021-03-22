@@ -157,10 +157,10 @@ public class Stun {
         dataInputStream.read(buffer, 0, 4);
 
         int messageLength = ((buffer[2] & 0xff) << 8) | (buffer[3] & 0xff);
-        if(messageLength <= 256){
+        if(messageLength <= 256 - 20){
             log.info("read buffer fully");
-            //want to read for specified length
-            dataInputStream.readFully(buffer, 0, messageLength);
+            //want to read for specified length plus header
+            dataInputStream.readFully(buffer, 0, messageLength + 20);
         }
         Response response = formulateResponse(buffer, socket.getInetAddress().getAddress(), socket.getPort());
         if (response != null) {
