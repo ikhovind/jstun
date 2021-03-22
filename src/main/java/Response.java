@@ -23,7 +23,7 @@ public class Response {
         byte[] attribute = new byte[20 + ((ipv6 ? 128 : 32) / 8)];
         //attribute type
         attribute[1] = 1;
-        //length of mapped address is always less than one byte
+        //length of mapped address is always less than 256 bytes, so attribute[2] is zero
         attribute[3] = (byte) ((32 + (ipv6 ? 128 : 32))/8);
         //family
         attribute[5] = (byte) (ipv6 ? 2 : 1);
@@ -65,7 +65,17 @@ public class Response {
             System.out.println("what in tarnation is this: " + Arrays.toString(ip));
             throw new IllegalArgumentException("illegal ip-address");
         }
+        byte[] attribute = new byte[32/8 + length];
 
+        //type
+        attribute[1] = 0x20;
+        //length
+        attribute[3] = (byte) length;
+        //family
+        attribute[5] = (byte) (ipv6 ? 0x2 : 0x1);
+        //x-port
+
+        //x-address
         String res = String.format("%16s", Integer.toBinaryString(0x0020));    // 0x0020 is the attribute type for XOR mapped address
         res += String.format("%16s", Integer.toBinaryString(length));            // Attribute Length. 0x0008 for IPv4, 0x0014 for IPv6
 
@@ -77,8 +87,12 @@ public class Response {
                         .substring(0, 16), 2);
         int binPort = Integer.parseInt(Integer.toBinaryString(port), 2);
         int xport = binPort ^ binCookie;
+        //x-port
+        attribute[6] = (byte) (xport >> 8);
+        attribute[7] = (byte) (xport & 0xff);
         res += String.format("%16s",
                 Integer.toBinaryString(xport));
+
 
         int[] xorbytes = new int[]{0x21, 0x12, 0xA4, 0x42, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
         if (ipv6) {
@@ -89,15 +103,17 @@ public class Response {
 
             i = 0;
 
-            for (Byte b : ip) {
-                int temp = (b & 0xff) ^ xorbytes[i++];
+            for (int j = 0; j < ip.length; j++) {
+                int temp = (ip[j] & 0xff) ^ xorbytes[i++];
+                attribute[j + 8] = (byte) temp;
                 res += String.format("%8s", Integer.toBinaryString(temp));
             }
         } else {
             int i = 0;
-            for (Byte b : ip) {
-                int temp = (b & 0xff) ^ xorbytes[i++];
+            for (int j = 0; j < ip.length; j++) {
+                int temp = (ip[j] & 0xff) ^ xorbytes[i++];
                 res += String.format("%8s", Integer.toBinaryString(temp));
+                attribute[j + 8] = (byte) temp;
             }
         }
 
@@ -106,6 +122,10 @@ public class Response {
     }
 
     public void insertErrorCodeAttribute(int code, String errorMessage){
+        //smallest possible value, will be expanded probably
+        byte[] attribute = new byte[8];
+        //attribute type
+        attribute[1] = 9;
         body += String.format("%16s", Integer.toBinaryString(0x0009)); //type for error code
         int lengthBefore = body.length();
         if(errorMessage.length() > 127 || errorMessage.getBytes(StandardCharsets.UTF_8).length > 763){
@@ -114,6 +134,27 @@ public class Response {
         if(!(code > 299 && code < 700)) throw new IllegalArgumentException("Given code is not an error code");
         //20 bits for alignment purposes
         body +=  String.format("%20s", Integer.toBinaryString(0));
+        //class
+        attribute[6] = (byte) (code/100);
+        //number
+        attribute[7] = (byte) (code % 100);
+        //reason phrase
+        byte[] reasonBytes = errorMessage.getBytes(StandardCharsets.UTF_8);
+        //expand array
+        //todo this pads after, maybe you're supposed to pad before
+        int lengthBeforePadding = reasonBytes.length + attribute.length;
+        int distFromFour = lengthBeforePadding & 3;
+        //increases length to number divisible by 4
+        byte[] newBytes = new byte[lengthBeforePadding + (3 - (lengthBeforePadding + 3) % 4)];
+        for (int i = 0; i < attribute.length; i++) {
+            newBytes[i] = attribute[i];
+        }
+        for (int i = 0; i < reasonBytes.length; i++) {
+            newBytes[i + attribute.length] = reasonBytes[i];
+        }
+        attribute = newBytes;
+
+
         //The Class represents the hundreds digit of the error code
         body += String.format("%3s", Integer.toBinaryString(code / 100));
         //The Number represents the error code modulo 100
@@ -130,6 +171,7 @@ public class Response {
         body += String.format("%" + body.length() % 32 + "s", 0).replace(" ", "0");
     }
 
+    //todo convert to byte array
     public void insertUnknownAttributes(Integer[] attributes){
 
         int lengthBefore = body.length();
@@ -161,7 +203,7 @@ public class Response {
         return transactionID;
     }
 
-    //TODO probably more efficient to use byte array rather than string
+    //TODO convert to byte array
     private void formulateHeader(boolean success, byte[] data) {
 
         //first two bits plus message type is the first 16 bits
@@ -179,6 +221,7 @@ public class Response {
         header = response.replace(" ", "0");
     }
 
+    //todo convert to byte array
     private void insertLength(){
         //  Overwrites the header's placeholder for length.
         //  NB! THIS SHOULD BE DONE LAST

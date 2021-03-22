@@ -237,7 +237,6 @@ public class Stun {
     }
 
     public static void main(String[] args) throws IOException {
-
         Stun server = new Stun();
         executor.execute(server::listenUDP);
         executor.execute(server::listenTCP);
