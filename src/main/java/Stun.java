@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.rmi.runtime.Log;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -14,20 +15,22 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 public class Stun {
+    private boolean running = true;
     private org.slf4j.Logger log = LoggerFactory.getLogger(Stun.class);
     private HashSet<Integer> knownAttributes = new HashSet<>();
-    private static ExecutorService executor = Executors.newFixedThreadPool(2);
+    private static ExecutorService executor = Executors.newFixedThreadPool(3);
     private final int requestClass = 1;
     private final int indication = 0b00000000010000;
     private final int magicCookie = 0x2112A442;
     private DatagramSocket socket;
     private byte[] buf = new byte[256];
     private byte[] bindMethod = new byte[]{62, -17};
+    private int port = 3478;
 
 
     public Stun() throws SocketException {
-        log.info("listening to port");
-        socket = new DatagramSocket(3478);
+        log.info("listening to port: " + port);
+        socket = new DatagramSocket(port);
     }
     private void addKnownAttributes(){
         //TODO insert attributes we know here
@@ -89,18 +92,49 @@ public class Stun {
     }
 
     public void listenUDP() {
-        boolean running = true;
         while (running) {
-            log.info("waiting for packet");
+            log.info("waiting for udp-packet");
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
-            executor.execute(()->respond(packet));
+            executor.execute(()->{
+                    respond(packet);
+                    //todo send packet here
+                }
+            );
         }
         socket.close();
+    }
+
+    public void listenTCP() {
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
+
+            while(running){
+                log.info("waiting for tcp-connection");
+                Socket socket = serverSocket.accept();
+                log.info("tcp connection accepted");
+                executor.execute(()-> {
+                    try {
+                        handleTCPConnection(socket);
+                    } catch (IOException ioException) {
+                        log.error(ioException.getMessage());
+                    }
+                });
+            }
+        } catch (IOException e){
+            log.error(e.getMessage());
+        }
+    }
+
+    private void handleTCPConnection(Socket socket) throws IOException {
+        byte[] buffer = new byte[256];
+        DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+        dataInputStream.readFully(buffer);
+
     }
 
     //handles attributes, returns null if all are understood, array of not understood attributes if not
@@ -125,6 +159,7 @@ public class Stun {
         return unknowns.toArray(new Integer[0]);
     }
 
+    //todo make return a byte array, parameter should be message and ip-addresses, can then be used for tcp as well
     private void respond(DatagramPacket packet) {
         try {
             log.info("package recieved in updated app");
@@ -185,8 +220,11 @@ public class Stun {
         }
     }
 
+
+
     public static void main(String[] args) throws IOException {
         Stun server = new Stun();
         executor.execute(server::listenUDP);
+        executor.execute(server::listenTCP);
     }
 }
