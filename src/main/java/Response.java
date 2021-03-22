@@ -20,7 +20,20 @@ public class Response {
         if (ip.length > 4) {
             ipv6 = true;
         }
-
+        byte[] attribute = new byte[20 + ((ipv6 ? 128 : 32) / 8)];
+        //attribute type
+        attribute[1] = 1;
+        //length of mapped address is always less than one byte
+        attribute[3] = (byte) ((32 + (ipv6 ? 128 : 32))/8);
+        //family
+        attribute[5] = (byte) (ipv6 ? 2 : 1);
+        //port
+        attribute[6] = (byte) (port >> 8);
+        attribute[7] = (byte) (port & 0xff);
+        for (int i = 0; i < ip.length; i++) {
+            attribute[i + 8] = ip[i];
+        }
+        //address
         String res = String.format("%16s", Integer.toBinaryString(0x0001)); // 0x0001 is the attribute type for mapped address
         if (ipv6) res += String.format("%16s", Integer.toBinaryString(0x014));
         else res += String.format("%16s", Integer.toBinaryString(0x0008));       // Hard-coded length of an IPv4 address

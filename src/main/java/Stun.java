@@ -136,6 +136,8 @@ public class Stun {
                 log.info("tcp connection accepted");
                 executor.execute(()-> {
                     try {
+                        //timeout after 30 seconds
+                        socket.setSoTimeout(30000);
                         handleTCPConnection(socket);
                     } catch (IOException ioException) {
                         log.error("IOexception when handling tcp connection " + ioException.getMessage());
@@ -195,9 +197,6 @@ public class Stun {
         return unknowns.toArray(new Integer[0]);
     }
 
-    private void respond(DatagramPacket packet) {
-    }
-
     private Response formulateResponse(byte[] message, byte[] address, int port)  {
         try {
             if(verifyMessage(message)) {
@@ -237,8 +236,8 @@ public class Stun {
         }
     }
 
-
     public static void main(String[] args) throws IOException {
+
         Stun server = new Stun();
         executor.execute(server::listenUDP);
         executor.execute(server::listenTCP);
