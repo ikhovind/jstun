@@ -138,29 +138,39 @@ public class Stun {
                     try {
                         handleTCPConnection(socket);
                     } catch (IOException ioException) {
-                        log.error(ioException.getMessage());
+                        log.error("IOexception when handling tcp connection " + ioException.getMessage());
                     }
 
                 });
             }
         } catch (IOException e){
-            log.error(e.getMessage());
+            log.error("IOException when opening socket: " + e.getMessage());
         }
     }
 
     private void handleTCPConnection(Socket socket) throws IOException {
         log.info("handling tcp-connection");
         byte[] buffer = new byte[256];
+        log.info("creating inputstream");
         DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-        dataInputStream.readFully(buffer);
+        log.info("inputstream created");
+        dataInputStream.read(buffer, 0, 4);
+
+        int messageLength = ((buffer[2] & 0xff) << 8) | (buffer[3] & 0xff);
+        if(messageLength <= 256){
+            log.info("read buffer fully");
+            //want to read for specified length
+            dataInputStream.readFully(buffer, 0, messageLength);
+        }
         Response response = formulateResponse(buffer, socket.getInetAddress().getAddress(), socket.getPort());
         if (response != null) {
             log.info("responding to tcp-connection");
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
             dos.write(response.getByteResponse());
-        } else{
+        } else {
             log.info("tcp-connection warrants no response");
         }
+
     }
 
     //handles attributes, returns null if all are understood, array of not understood attributes if not
