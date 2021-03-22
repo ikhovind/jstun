@@ -1,6 +1,6 @@
-# Unnamed STUN Server
+# BRYNJÜLF
 
-This STUN server was developed as a solution to an optional project in the course IDATT2104 - Network Programming.
+BRYNJÜLF is a STUN server that was developed as a solution to an optional project in the course IDATT2104 - Network Programming.
 The server is written in Java, and has the following functionality:
   * Attributes:
     * Mapped-Address
