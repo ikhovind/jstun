@@ -10,15 +10,13 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  format:
+  formatting:
     runs-on: ubuntu-latest
-    # Map a step output to a job output
     steps:
-      - uses: actions/checkout@v2
-      - name: setup astyle
-        run:  sudo apt-get install -y astyle 
-      - name: run astyle
-        run: astyle --style=java -r "*.java" -n
+      - uses: actions/checkout@v2 # v2 minimum required
+      - uses: axel-op/googlejavaformat-action@v3
+        with:
+          args: "--skip-sorting-imports --replace"  
   test:
     runs-on: ubuntu-latest
     steps:
