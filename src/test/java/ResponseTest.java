@@ -20,7 +20,7 @@ class Helper {
         return data;
     }
 }
-public class StunTest {
+public class ResponseTest {
     Response validResponse;
     Response errorResponse;
     //gotten from wireshark
