@@ -1,4 +1,3 @@
-import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -95,6 +94,7 @@ public class Response {
         byte[] attribute = new byte[8];
         //attribute type
         attribute[1] = 9;
+        if(errorMessage == null) throw new IllegalArgumentException("error message can't be null");
         if(errorMessage.length() > 127 || errorMessage.getBytes(StandardCharsets.UTF_8).length > 763){
             throw new IllegalArgumentException("Given error message exceeds maximum length of 127 characters or 763 bytes");
         }
@@ -109,6 +109,8 @@ public class Response {
         //expand array
         //todo this pads after, maybe you're supposed to pad before
         int lengthBeforePadding = reasonBytes.length + attribute.length;
+
+
         //increases length to number divisible by 4
         byte[] newBytes = new byte[lengthBeforePadding + (3 - (lengthBeforePadding + 3) % 4)];
         System.arraycopy(attribute, 0, newBytes, 0, attribute.length);
@@ -122,23 +124,26 @@ public class Response {
         addToResponse(attribute);
     }
 
-    public void insertUnknownAttributes(Integer[] attributes){
-        //pads length up to nearest 4th byte
+    public void insertUnknownAttributes(Integer[] unknownAttributes){
+        //pads length up to nearest 4th byte no padding if already divisible
         //todo pads after, maybe pad before
-        int attributeLength = 4 + (3 - (attributes.length/8 + 3) % 4);
+        int attributeLength = (4 + unknownAttributes.length * 2 + 3) / 4 * 4;
+                //(3 - (unknownAttributes.length * 2 + 3) % 4);
         byte[] attribute = new byte[attributeLength];
 
         //type
         attribute[1] = 0xA;
         //length
         //two bytes per attribute
-        int valueLength = attributes.length * 2;
+        int valueLength = unknownAttributes.length * 2;
         attribute[2] = (byte) (valueLength >> 8);
         attribute[3] = (byte) (valueLength & 0xff);
         //attributes
-        for(int i = 0; i < attributes.length; i++){
-            attribute[4 + i] = (byte) (attribute[i] >> 8);
-            attribute[5 + i] = (byte) (attribute[i] & 0xff);
+        int attributeIndex = 0;
+        for (Integer i : unknownAttributes){
+            attribute[4 + attributeIndex] = (byte) (i >> 8);
+            attribute[5 + attributeIndex] = (byte) (i & 0xff);
+            attributeIndex += 2;
         }
 
         addToResponse(attribute);
@@ -164,6 +169,7 @@ public class Response {
     private void formulateHeader(boolean success, byte[] data) {
         byte[] headerBytes = new byte[20];
         int messageType = (success ? successClass : errorClass) | bindingMethod;
+
         headerBytes[0] = (byte) (messageType >> 8);
         headerBytes[1] = (byte) (messageType & 0xff);
 
@@ -183,7 +189,6 @@ public class Response {
 
     private void insertLength(){
         int byteArrayLength = responseBytes.length - 20;
-        System.out.println("BYTE ARRAY LENGTH: "  + byteArrayLength);
         responseBytes[2] = (byte) (byteArrayLength >> 8);
         responseBytes[3] = (byte) (byteArrayLength & 0xff);
         //  Overwrites the header's placeholder for length.

@@ -1,18 +1,10 @@
-
-
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.rmi.runtime.Log;
-
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
-import java.sql.SQLOutput;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 
 public class Stun {
     private boolean running = true;
@@ -27,14 +19,9 @@ public class Stun {
     private byte[] bindMethod = new byte[]{62, -17};
     private int port = 3478;
 
-
     public Stun() throws SocketException {
         log.info("listening to port: " + port);
         socket = new DatagramSocket(port);
-    }
-    private void addKnownAttributes(){
-        //TODO insert attributes we know here
-        knownAttributes.addAll(Arrays.asList());
     }
 
     private boolean verifyMessage(byte[] message) throws BadRequestException {
@@ -74,21 +61,6 @@ public class Stun {
         log.info("check 5 passed - packet OK!");
         //if the message is an indication it warrants no response
         return (message[1] & 16) == 0;
-    }
-
-
-    private void debugPacket(DatagramPacket packet) {
-        System.out.println(packet.getSocketAddress());
-        System.out.printf("received: ");
-        String print = "";
-        for (Byte b :
-                packet.getData()) {
-            print += b & 0xff;
-        }
-        System.out.println(print);
-
-        System.out.println("PACKET SOCKETADDRESS: " + packet.getSocketAddress());
-        System.out.println("PACKET ADDRES + PORT: " + packet.getAddress() + ":" + packet.getPort());
     }
 
     public void listenUDP() {
