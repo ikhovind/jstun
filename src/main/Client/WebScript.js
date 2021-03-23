@@ -93,7 +93,6 @@ chatChannel = WebRTCConnection.createDataChannel('chat');
     function createOffer() {
         chatChannel.onmessage = (event) => recieveMessage(event.data);
         chatChannel.onopen = () => {
-            //document.location = "chatWindow.html";
             document.documentElement.innerHTML = htmlTest;
         }
         chatChannel.onclose = () => console.log('onclose');
