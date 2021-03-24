@@ -1,4 +1,6 @@
 # KANCA
+<img src="https://i.imgur.com/gSMBLPX.png" alt="drawing" width="200"/></img>
+
 
 KANCA is a STUN server that was developed according to RFC 5389 as a solution to an optional project in the course IDATT2104 - Network Programming.
 The server is written in Java, and has the following functionality:
