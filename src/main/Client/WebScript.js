@@ -88,107 +88,155 @@ let htmlTest = "<!DOCTYPE html>\n" +
     "    }\n" +
     "   .message {\n" +
     "        width: 50%;\n" +
+    "        margin: 0;\n" +
     "    }\n" +
     "\n" +
     "   .sent {\n" +
     "        margin-left: 50%;\n" +
     "    }\n" +
     "   hr {\n" +
-    "        margin: 0;\n" +
+    "        margin: 3px 0 0 0;\n" +
     "        padding: 0;\n" +
     "        border-top: 1px solid #23272A;\n" +
     "        border-bottom: 0;\n" +
     "    }\n" +
+    "   .pfp {\n" +
+    "        margin-top: 10px;\n" +
+    "        border-radius: 50%;\n" +
+    "        border: 1px solid #61C9CE;\n" +
+    "    }\n" +
+    "   .talr {\n" +
+    "        text-align: right;\n" +
+    "    }\n" +
     "</style>\n" +
     "</body></html>"
+
+let pfp_src = "https://i.imgur.com/vcTN90E.png";
+let remote_pfp = "https://i.imgur.com/Lij7ztF.png";
+let changed = false;
 
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
         {
-            urls: 'stun:127.0.0.1:3478',
+            urls: 'stun:13.48.195.80:3478',
         },
     ],
 });
 chatChannel = WebRTCConnection.createDataChannel('chat');
 
-    document.getElementById("leftInputBox").readOnly = true;
+document.getElementById("leftInputBox").readOnly = true;
 
-    if (localStorage.getItem("joinGenerate") === "join") {
-        document.getElementById("chatButton").addEventListener("click", () => acceptOffer());
-    } else {
-        createOffer();
-        document.getElementById("chatButton").addEventListener("click", () => openConnecion());
-    }
+if (localStorage.getItem("joinGenerate") === "join") {
+    document.getElementById("chatButton").addEventListener("click", () => acceptOffer());
+} else {
+    createOffer();
+    document.getElementById("chatButton").addEventListener("click", () => openConnecion());
+}
 
 
-    function createOffer() {
-        chatChannel.onmessage = (event) => recieveMessage(event.data);
-        chatChannel.onopen = () => {
-            document.documentElement.innerHTML = htmlTest;
+function createOffer() {
+    chatChannel.onmessage = (event) => recieveMessage(event.data);
+    chatChannel.onopen = () => {
+        if(!(document.getElementById("pfp_src").value=="")){
+            pfp_src = document.getElementById("pfp_src").value;
+            chatChannel.send("$change " + pfp_src)
+        }else{
+            chatChannel.send("$change " + remote_pfp)
         }
-        chatChannel.onclose = () => console.log('onclose');
-
-        WebRTCConnection.onicecandidate = (event) => {
-            if (event.candidate)
-                document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
-                document.getElementById("leftInputBox").readOnly = true;
-        };
-
-        WebRTCConnection.createOffer().then((localDescription) => {
-            WebRTCConnection.setLocalDescription(localDescription);
-        });
+        document.documentElement.innerHTML = htmlTest;
     }
+    chatChannel.onclose = () => console.log('onclose');
 
-    function acceptOffer() {
-        const remoteDescription = document.getElementById("rightInputBox").value;
+    WebRTCConnection.onicecandidate = (event) => {
+        if (event.candidate)
+            console.log(event.candidate)
+        document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
+        document.getElementById("leftInputBox").readOnly = true;
+    };
+
+    WebRTCConnection.createOffer().then((localDescription) => {
+        WebRTCConnection.setLocalDescription(localDescription);
+    });
+}
+
+function acceptOffer() {
+    const remoteDescription = document.getElementById("rightInputBox").value;
 
 
-        WebRTCConnection.ondatachannel = (event) => {
-            if (event.channel.label == 'chat') {
-                chatChannel = event.channel;
-                chatChannel.onmessage = (event) => recieveMessage(event.data);
-                chatChannel.onopen = () => {
-                    //document.location = "chatWindow.html";
-                    document.documentElement.innerHTML = htmlTest;
-
+    WebRTCConnection.ondatachannel = (event) => {
+        if (event.channel.label == 'chat') {
+            chatChannel = event.channel;
+            chatChannel.onmessage = (event) => recieveMessage(event.data);
+            chatChannel.onopen = () => {
+                //document.location = "chatWindow.html";
+                if(!(document.getElementById("pfp_src").value=="")){
+                    pfp_src = document.getElementById("pfp_src").value;
+                    chatChannel.send("$change " + pfp_src)
+                }else{
+                    chatChannel.send("$change " + remote_pfp)
                 }
-                chatChannel.onclose = () => console.log('onclose');
+                document.documentElement.innerHTML = htmlTest;
             }
-        };
+            chatChannel.onclose = () => console.log('onclose');
+        }
+    };
 
-        WebRTCConnection.onicecandidate = (event) => {
-            if (event.candidate)
-                document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
-        };
+    WebRTCConnection.onicecandidate = (event) => {
+        if (event.candidate)
+            document.getElementById("leftInputBox").value = JSON.stringify(WebRTCConnection.localDescription);
+    };
 
-        WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
+    WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
 
-        WebRTCConnection.createAnswer().then((localDescription) => {
-            WebRTCConnection.setLocalDescription(localDescription);
-        });
-    }
+    WebRTCConnection.createAnswer().then((localDescription) => {
+        WebRTCConnection.setLocalDescription(localDescription);
+    });
+}
 
 function openConnecion() {
     const remoteDescription = document.getElementById("rightInputBox").value;
     WebRTCConnection.setRemoteDescription(JSON.parse(remoteDescription));
     console.log("json: " + JSON.stringify(WebRTCConnection));
-
 }
 
-function sendMessage(){
+function sendMessage() {
     console.log("sent");
     let message = document.getElementById("inputText").value;
     document.getElementById("inputText").value = "";
-    document.getElementById("chatDiv").innerHTML += ("<p class='message sent' style=\"text-align:right\"> " + message.replace(/<\/?[^>]+(>|$)/g, "") + "</p> <hr> ");
+    document.getElementById("chatDiv").innerHTML += (
+        "<div class='talr'>" +
+        "   <img class='sent pfp' src=\"" + pfp_src + "\" alt='' width='32px'>" +
+        "   <p class='message sent'>" +
+            message.replace(/<\/?[^>]+(>|$)/g, "") + "</p>" +
+        "   <hr>" +
+        "</div>"
+    );
     chatChannel.send(message)
     //do something with webrtc here
 }
 
-function recieveMessage(message){
+function recieveMessage(message) {
+    if(!changed){
+        console.log(message);
+        if(message == "$change"){
+            changed = true;
+            return;
+        }
+        remote_pfp = message.substring(7);
+        changed = true;
+        return;
+    }
     //called from eventListener on webRTC :)
-    document.getElementById("chatDiv").innerHTML += ("<p class='message'>" + message.replace(/<\/?[^>]+(>|$)/g, "") + " <hr> ");
+    document.getElementById("chatDiv").innerHTML += ("<img class='pfp' src='" + remote_pfp + "' width='32px'><p class='message'>" + message.replace(/<\/?[^>]+(>|$)/g, "") + " <hr> ");
     console.log(message)
 }
 
-
+function toggleSettings(){
+    var x = document.getElementById("pfp_src")
+    if (x.style.display === 'none'){
+        x.style.display = "block";
+    }else{
+        x.style.display = "none";
+    }
+}
 

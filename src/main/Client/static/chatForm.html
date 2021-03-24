@@ -20,13 +20,16 @@
             <textarea class="descriptor" id="rightInputBox"></textarea>
         </div>
 
-        <div class="col-4">
+        <div class="col-4" id="settings">
             <button id="chatButton">Connect</button>
+            <button class="btn fa fa-cog" onclick="toggleSettings()"></button>
+            <textarea id="pfp_src"></textarea>
         </div>
     </div>
     <script src="../WebScript.js"></script>
 </div>
 </body>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
     @media only screen and (min-width: 100px) {
         /* For tablets: */
@@ -142,6 +145,17 @@
         display: block;
     }
 
+    #settings {
+    }
+
+    .btn {
+        background: none;
+        border: none;
+        color: #7289da;
+        outline: none;
+        cursor: pointer;
+    }
+
     .descriptor {
         padding: 5px;
         min-height: 150px;
@@ -169,11 +183,16 @@
         border: none;
         border-radius: 3px;
         padding: 8px;
-        margin-top: 10px;
     }
 
     #chatButton:hover {
         background-color: #99a9e2;
+    }
+
+    #pfp_src {
+        max-height: 25px;
+        padding-top: 7px;
+        display: none;
     }
 
     html, body {
