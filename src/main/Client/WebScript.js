@@ -205,12 +205,13 @@ function sendMessage() {
     document.getElementById("inputText").value = "";
     document.getElementById("chatDiv").innerHTML += (
         "<div class='talr'>" +
-        "   <img class='sent pfp' src=\"" + pfp_src + "\" alt='' width='32px'>" +
+        "   <img class='sent pfp' src=\"" + pfp_src + "\" alt='' width='32px' height='32px'>" +
         "   <p class='message sent'>" +
             message.replace(/<\/?[^>]+(>|$)/g, "") + "</p>" +
         "   <hr>" +
         "</div>"
     );
+    document.getElementById("chatDiv").scrollTop = document.getElementById("chatDiv").scrollHeight;
     chatChannel.send(message)
     //do something with webrtc here
 }
@@ -227,7 +228,8 @@ function recieveMessage(message) {
         return;
     }
     //called from eventListener on webRTC :)
-    document.getElementById("chatDiv").innerHTML += ("<img class='pfp' src='" + remote_pfp + "' width='32px'><p class='message'>" + message.replace(/<\/?[^>]+(>|$)/g, "") + " <hr> ");
+    document.getElementById("chatDiv").innerHTML += ("<img class='pfp' src='" + remote_pfp + "' width='32px' height='32px'><p class='message'>" + message.replace(/<\/?[^>]+(>|$)/g, "") + " <hr> ");
+    document.getElementById("chatDiv").scrollTop = document.getElementById("chatDiv").scrollHeight;
     console.log(message)
 }
 
