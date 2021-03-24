@@ -40,7 +40,7 @@ public class Response {
     addToResponse(attribute);
   }
 
-  public void insertXorMappedAdress(byte[] ip, byte[] data, int port)
+  public void insertXorMappedAddress(byte[] ip, byte[] data, int port)
       throws IllegalArgumentException {
     log.info("inserting xor-mapped address");
     byte[] transactionID = getTransactionID(data);
@@ -51,7 +51,7 @@ public class Response {
       length = 0x0014;
       ipv6 = true;
     } else if (ip.length > 16) {
-      log.error("Found invalig ip: " + new String(ip, StandardCharsets.UTF_8));
+      log.error("Found invalid ip: " + new String(ip, StandardCharsets.UTF_8));
       throw new IllegalArgumentException("illegal ip-address");
     }
     byte[] attribute = new byte[32 / 8 + length];
@@ -179,7 +179,7 @@ public class Response {
   }
 
   private void formulateHeader(boolean success, byte[] data) {
-    log.info("formulating inital header with " + (success ? "success" : "failure"));
+    log.info("formulating initial header with " + (success ? "success" : "failure"));
     byte[] headerBytes = new byte[20];
     int messageType = (success ? successClass : errorClass) | bindingMethod;
 

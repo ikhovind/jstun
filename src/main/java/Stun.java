@@ -166,7 +166,7 @@ public class Stun {
           if (!knownAttributes.contains(attribute)) {
             unknowns.add(attribute);
           } else {
-            // handle attribute here lol
+            // handle attribute here
           }
         }
         log.info("client used attribute: " + attribute);
@@ -191,7 +191,7 @@ public class Stun {
           //  Adds attributes to the response
           response.insertMappedAddress(address, port);
           try {
-            response.insertXorMappedAdress(address, message, port);
+            response.insertXorMappedAddress(address, message, port);
           } catch (IllegalArgumentException e) {
             log.error(e.getMessage());
           }

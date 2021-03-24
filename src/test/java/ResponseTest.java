@@ -61,7 +61,7 @@ public class ResponseTest {
     // example taken from wireshark
     validResponse = new Response(true, Helper.hexStringToByteArray(bindingRequest1));
     validResponse.insertMappedAddress(ip1, port1);
-    validResponse.insertXorMappedAdress(ip1, Helper.hexStringToByteArray(bindingRequest1), port1);
+    validResponse.insertXorMappedAddress(ip1, Helper.hexStringToByteArray(bindingRequest1), port1);
     assertArrayEquals(
         Helper.hexStringToByteArray(bindingResponse1), validResponse.getByteResponse());
   }
