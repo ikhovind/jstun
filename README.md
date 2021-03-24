@@ -63,7 +63,7 @@ fingerprint, message-integrity (?), Nonce, software and alternate server.
 
 The attributes we would be able to implement with a credential mechanism would be Realm
 
-####Weaknesses
+#### Weaknesses
 The largest weakness that currently affect our server the most is the lack of being able to handle any attributes sent 
 by the client. We have implemented the necessary error handling to inform the client of this, but it would be better 
 to be able to actually handle for example requests pertaining to long term or short term credentials
@@ -78,21 +78,23 @@ the [Apache license, Version 2.0 for log4j](https://logging.apache.org/log4j/2.x
 and the [Apache Software License 2.0 for Maven](https://maven.apache.org/ref/3.0/license.html). 
 All of these are open source licenses, allowing us to use them free of charge in our own projects.
 
-####Junit
+#### Junit
 Junit is used in our project to write our unit tests. They give us access to methods such as assert(), while allowing 
 us to tag our tests, which simplify automatically running them in our CI-pipeline
-####Log4j
+
+#### Log4j
 Log4j is used to log the state of the program to both the command line and to write the logs to a file called all.txt
 in the logs directory. 
-####Maven
+
+#### Maven
 Maven is used to handle our dependencies and to help in automating our integration and deployment
 
 It is also used in order to compile our project into a jar which is then automatically run in our
 continuous deployment
-####Documentation for our two dependencies can be found here:
+#### Documentation for our two dependencies can be found here:
 https://junit.org/junit4/javadoc/latest/index.html for junit4
 
-####And here:
+#### And here:
 
 https://logging.apache.org/log4j/2.x/javadoc.html for log4j
 ## Installation
@@ -143,7 +145,7 @@ Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 
 ````
 
-##Pipeline
+## Pipeline
 Setting up the pipeline for our continous deployment was likely the most time-consuming part of this project, with many
 attempted solutions which ended up being just a waste of time.
 
