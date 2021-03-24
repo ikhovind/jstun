@@ -1,6 +1,7 @@
 # KANCA
 <img src="https://i.imgur.com/gSMBLPX.png" alt="drawing" width="200"/></img>
 
+https://github.com/ikhovind/jstun
 
 KANCA is a STUN server that was developed according to RFC 5389 as a solution to an optional project in the course IDATT2104 - Network Programming.
 The server is written in Java, and has the following functionality:
@@ -200,3 +201,25 @@ https://github.com/ikhovind/jstun/blob/main/.github/workflows/maven.yml
 
 A list of our workflows can be found here:
 https://github.com/ikhovind/jstun/actions
+
+
+
+# KANCA Client
+
+The KANCA Client was developed in addition to it's server counterpart as a requirement to the assignment, as well as for testing purposes.
+The client is written in JavaScript and uses the KANCA server to provide users with descriptors to be used for RTC Peer Connections.
+Funcionality is as follows:
+* Chatting
+* Timestamps
+* Auto-scrolling
+* Custom profile pictures
+* Free, open-source software
+
+## Further Work
+Features that could be implemented if furhter development was to be had:
+* Voice and video chatting
+* Collapsible messages clusters
+* User accounts i.e. login
+* Ability to change profile picture while chatting
+* Pressing enter to send messages
+* Prettier GUI
