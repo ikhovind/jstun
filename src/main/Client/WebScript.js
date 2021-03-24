@@ -206,6 +206,9 @@ function openConnecion() {
 }
 
 function sendMessage() {
+    if(document.getElementById("inputText").value == ""){
+        return;
+    }
     console.log("sent");
     let message = document.getElementById("inputText").value;
     document.getElementById("inputText").value = "";
