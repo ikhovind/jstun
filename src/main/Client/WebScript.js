@@ -1,28 +1,29 @@
 let htmlTest = "<!DOCTYPE html>\n" +
-    "<html lang=\"en\">\n" +
-    "<head>\n" +
+    "<html lang=\"en\"><head>\n" +
+    "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n" +
     "    <meta charset=\"UTF-8\">\n" +
     "    <title>Title</title>\n" +
     "</head>\n" +
     "<body>\n" +
-    "    <div id=\"chat\" >\n" +
+    "    <div id=\"chat\">\n" +
     "        <div class=\"container\">\n" +
-    "            <h1>Chat with your connection</h1>\n" +
+    "            <h1 id=\"header\">Chat with your connection</h1>\n" +
     "            <div id=\"chatDiv\" class=\"chatBox\">\n" +
     "\n" +
     "            </div>\n" +
     "            <div class=\"chatFooter\">\n" +
     "                <textarea id=\"inputText\" name=\"message\" placeholder=\"Write something..\"></textarea>\n" +
-    "                <input id=\"sendButton\" onclick='sendMessage()' \" type=\"submit\"/>\n" +
+    "                <input id=\"sendButton\" onclick=\"sendMessage()\" type=\"submit\" value=\"Send\">\n" +
     "            </div>\n" +
     "        </div>\n" +
     "        <script src=\"../WebScript.js\"></script>\n" +
     "    </div>\n" +
-    "</body>\n" +
+    "\n" +
     "<style>\n" +
     "    /* Style inputs with type=\"text\", select elements and textareas */\n" +
     "    .chatBox {\n" +
     "        overflow: auto;\n" +
+    "        word-wrap: break-word;\n" +
     "        width: 100%; /* Full width */\n" +
     "        height: 30vw;\n" +
     "        padding: 12px; /* Some padding */\n" +
@@ -32,7 +33,13 @@ let htmlTest = "<!DOCTYPE html>\n" +
     "        margin-top: 6px; /* Add a top margin */\n" +
     "        margin-bottom: 16px; /* Bottom margin */\n" +
     "        resize: vertical; /* Allow the user to vertically resize the textarea (not horizontally) */\n" +
-    "        background-color: #ffffff;\n" +
+    "        background-color: #40444b;\n" +
+    "        color: #ffffff;\n" +
+    "    }\n" +
+    "\n" +
+    "    #header {\n" +
+    "        font-family: \"Trebuchet MS\", sans-serif;\n" +
+    "        color: #f2f2f2;\n" +
     "    }\n" +
     "\n" +
     "    #inputText{\n" +
@@ -43,11 +50,14 @@ let htmlTest = "<!DOCTYPE html>\n" +
     "        margin-top: 6px; /* Add a top margin */\n" +
     "        margin-bottom: 16px; /* Bottom margin */\n" +
     "        resize: vertical;\n" +
-    "        width: 100%\n" +
+    "        width: 100%;\n" +
+    "        background-color: #40444b;\n" +
+    "        color: #ffffff;\n" +
     "    }\n" +
+    "\n" +
     "    #sendButton{\n" +
     "        width: 20%;\n" +
-    "        background-color: #4CAF50;\n" +
+    "        background-color: #7289da;\n" +
     "        color: white;\n" +
     "        padding: 12px 12px;\n" +
     "        border: none;\n" +
@@ -55,9 +65,13 @@ let htmlTest = "<!DOCTYPE html>\n" +
     "        cursor: pointer;\n" +
     "    }\n" +
     "\n" +
+    "    #sendButton:hover {\n" +
+    "        background-color: #99a9e2;\n" +
+    "    }\n" +
+    "\n" +
     "    /* When moving the mouse over the submit button, add a darker green color */\n" +
     "    input[type=submit]:hover {\n" +
-    "        background-color: #45a049;\n" +
+    "        background-color: #99a9e2;\n" +
     "    }\n" +
     "\n" +
     "    /* Add a background color and some padding around the form */\n" +
@@ -68,8 +82,25 @@ let htmlTest = "<!DOCTYPE html>\n" +
     "    body{\n" +
     "        background-color: #f2f2f2;\n" +
     "    }\n" +
+    "    html, body {\n" +
+    "        max-height: 1070px;\n" +
+    "        background-color: #2c2f33;\n" +
+    "    }\n" +
+    "   .message {\n" +
+    "        width: 50%;\n" +
+    "    }\n" +
+    "\n" +
+    "   .sent {\n" +
+    "        margin-left: 50%;\n" +
+    "    }\n" +
+    "   hr {\n" +
+    "        margin: 0;\n" +
+    "        padding: 0;\n" +
+    "        border-top: 1px solid #23272A;\n" +
+    "        border-bottom: 0;\n" +
+    "    }\n" +
     "</style>\n" +
-    "</html>"
+    "</body></html>"
 
 const WebRTCConnection = new RTCPeerConnection({
     iceServers: [
@@ -148,14 +179,14 @@ function sendMessage(){
     console.log("sent");
     let message = document.getElementById("inputText").value;
     document.getElementById("inputText").value = "";
-    document.getElementById("chatDiv").innerHTML += ("<p  style=\"text-align:right\"> " + message.replace(/<\/?[^>]+(>|$)/g, "") + "</p>");
+    document.getElementById("chatDiv").innerHTML += ("<p class='message sent' style=\"text-align:right\"> " + message.replace(/<\/?[^>]+(>|$)/g, "") + "</p> <hr> ");
     chatChannel.send(message)
     //do something with webrtc here
 }
 
 function recieveMessage(message){
     //called from eventListener on webRTC :)
-    document.getElementById("chatDiv").innerHTML += ("<p>" + message.replace(/<\/?[^>]+(>|$)/g, "") + "</p>");
+    document.getElementById("chatDiv").innerHTML += ("<p class='message'>" + message.replace(/<\/?[^>]+(>|$)/g, "") + " <hr> ");
     console.log(message)
 }
 
