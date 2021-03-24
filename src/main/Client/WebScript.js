@@ -90,9 +90,11 @@ let htmlTest = "<!DOCTYPE html>\n" +
     "        width: 50%;\n" +
     "        margin: 0;\n" +
     "    }\n" +
-    "\n" +
     "   .sent {\n" +
     "        margin-left: 50%;\n" +
+    "    }\n" +
+    "   .floatri {\n" +
+    "        float: right;\n" +
     "    }\n" +
     "   hr {\n" +
     "        margin: 3px 0 0 0;\n" +
@@ -107,6 +109,10 @@ let htmlTest = "<!DOCTYPE html>\n" +
     "    }\n" +
     "   .talr {\n" +
     "        text-align: right;\n" +
+    "    }\n" +
+    "   .time {\n" +
+    "        font-size: 12px;\n" +
+    "        color: #9b9b9b;\n" +
     "    }\n" +
     "</style>\n" +
     "</body></html>"
@@ -206,8 +212,9 @@ function sendMessage() {
     document.getElementById("chatDiv").innerHTML += (
         "<div class='talr'>" +
         "   <img class='sent pfp' src=\"" + pfp_src + "\" alt='' width='32px' height='32px'>" +
-        "   <p class='message sent'>" +
-            message.replace(/<\/?[^>]+(>|$)/g, "") + "</p>" +
+        "   <br>" +
+        "   <span class='time'>" + getTime() + "</span>" +
+        "   <p class='message sent'>" + message.replace(/<\/?[^>]+(>|$)/g, "") + "</p>" +
         "   <hr>" +
         "</div>"
     );
@@ -228,7 +235,13 @@ function recieveMessage(message) {
         return;
     }
     //called from eventListener on webRTC :)
-    document.getElementById("chatDiv").innerHTML += ("<img class='pfp' src='" + remote_pfp + "' width='32px' height='32px'><p class='message'>" + message.replace(/<\/?[^>]+(>|$)/g, "") + " <hr> ");
+    document.getElementById("chatDiv").innerHTML += (
+        "<div>" +
+        "   <img class='pfp' src='" + remote_pfp + "' width='32px' height='32px'>" +
+        "   <br>" +
+        "   <span class='time time-left'>" + getTime() + "</span>" +
+        "   <p class='message'>"+ message.replace(/<\/?[^>]+(>|$)/g, "") + " <hr> " +
+        "</div>");
     document.getElementById("chatDiv").scrollTop = document.getElementById("chatDiv").scrollHeight;
     console.log(message)
 }
@@ -241,4 +254,10 @@ function toggleSettings(){
         x.style.display = "none";
     }
 }
+
+function getTime(){
+    let d = new Date();
+    return d.toLocaleTimeString();
+}
+
 
